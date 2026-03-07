@@ -1,4 +1,4 @@
-import {cn} from "@/lib/utils.js";
+import { cn } from "@/lib/utils.js";
 
 export const AnimatedLink = ({ children, href, className }) => {
     return (
@@ -7,7 +7,7 @@ export const AnimatedLink = ({ children, href, className }) => {
             className={cn(
                 className,
                 "group relative flex items-center",
-                "before:pointer-events-none before:absolute before:left-0 before:w-full before:bg-white before:content-['']",
+                "before:pointer-events-none before:absolute before:left-0 before:w-full before:bg-neutral-900 before:content-['']",
                 "before:scale-x-1 before:transition-all before:duration-300 before:ease-[cubic-bezier(0.4,0,0.2,1)]",
                 "before:origin-left md:before:top-0",
                 "before:z-1 px-2 before:h-full before:scale-x-0 before:mix-blend-difference hover:before:scale-x-100"

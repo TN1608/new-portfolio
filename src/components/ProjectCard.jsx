@@ -42,7 +42,7 @@ export function ProjectCard({ project, index, total, onClick }) {
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
         >
-            <div className="relative rounded-xl overflow-hidden bg-neutral-900 border border-white/[0.06]">
+            <div className="relative rounded-xl overflow-hidden border border-white/[0.06]">
                 {/* Image */}
                 <div className="relative w-full aspect-[16/10] overflow-hidden">
                     <img

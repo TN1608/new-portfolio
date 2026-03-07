@@ -205,7 +205,7 @@ export const AboutPage = () => {
         <section
             ref={sectionRef}
             id="about"
-            className="relative bg-neutral-950 overflow-hidden"
+            className="relative overflow-hidden"
         >
             {/* ── HERO INTRO ── */}
             <div className="min-h-[70vh] flex flex-col items-center justify-center px-6 text-center">
@@ -217,14 +217,14 @@ export const AboutPage = () => {
                     delay={80}
                     animateBy="words"
                     direction="top"
-                    className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight justify-center text-center mb-4"
+                    className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-neutral-900 tracking-tight justify-center text-center mb-4"
                 />
                 <BlurText
                     text="Developer. Design thinker. Pixel perfectionist."
                     delay={60}
                     animateBy="words"
                     direction="top"
-                    className="text-sm sm:text-base md:text-lg text-neutral-400 max-w-lg justify-center text-center"
+                    className="text-sm sm:text-base md:text-lg text-neutral-500 max-w-lg justify-center text-center"
                 />
             </div>
 
@@ -265,25 +265,25 @@ export const AboutPage = () => {
                                 } flex flex-col justify-center lg:pt-16`}>
                                 {/* Tag with line */}
                                 <div className="flex items-center gap-3 mb-6">
-                                    <span className="about-story-tag text-[10px] font-mono uppercase tracking-[0.3em] text-neutral-500">
+                                    <span className="about-story-tag text-xs font-bold font-mono uppercase tracking-[0.2em] text-neutral-500">
                                         {section.tag}
                                     </span>
-                                    <div className="about-story-line h-px w-12 bg-neutral-600 origin-left" />
+                                    <div className="about-story-line h-px w-12 bg-neutral-300 origin-left" />
                                 </div>
 
                                 {/* Heading */}
-                                <h3 className="about-story-heading text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight mb-5">
+                                <h3 className="about-story-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-neutral-900 tracking-tight leading-tight mb-6">
                                     {section.heading}
                                 </h3>
 
                                 {/* Body */}
-                                <p className="about-story-body text-sm sm:text-base text-neutral-400 leading-relaxed max-w-lg">
+                                <p className="about-story-body text-base sm:text-lg md:text-xl font-medium text-neutral-600 leading-relaxed max-w-xl">
                                     {section.body}
                                 </p>
 
                                 {/* Decorative number */}
                                 <div className="about-story-number mt-8">
-                                    <span className="text-7xl sm:text-8xl md:text-9xl font-black text-white/3 leading-none font-mono select-none">
+                                    <span className="text-7xl sm:text-8xl md:text-9xl font-black text-neutral-900/3 leading-none font-mono select-none">
                                         {String(i + 1).padStart(2, "0")}
                                     </span>
                                 </div>
@@ -300,7 +300,7 @@ export const AboutPage = () => {
                     delay={40}
                     animateBy="words"
                     direction="top"
-                    className="text-lg sm:text-xl md:text-2xl text-neutral-300 max-w-3xl mx-auto justify-center text-center italic mb-6"
+                    className="text-lg sm:text-xl md:text-2xl text-neutral-500 max-w-3xl mx-auto justify-center text-center italic mb-6"
                 />
                 <p className="text-xs font-mono text-neutral-600 tracking-widest uppercase">
                     — Nguyen Dinh Tuan

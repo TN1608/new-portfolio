@@ -60,7 +60,7 @@ export const ContactPage = () => {
         <section
             ref={sectionRef}
             id="contact"
-            className="relative bg-neutral-950 overflow-hidden"
+            className="relative  overflow-hidden"
         >
             {/* Divider transition from About */}
             <div className="contact-line-draw h-px bg-white/8 origin-left mx-6 md:mx-16" />
@@ -69,8 +69,8 @@ export const ContactPage = () => {
 
                 {/* ── TOP: Small label ── */}
                 <div className="contact-animate mb-12 md:mb-20">
-                    <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-neutral-500 flex items-center gap-3">
-                        <span className="w-6 h-px bg-neutral-600 inline-block" />
+                    <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-neutral-900 flex items-center gap-3">
+                        <span className="w-6 h-px  inline-block" />
                         Get In Touch
                     </span>
                 </div>
@@ -82,14 +82,14 @@ export const ContactPage = () => {
                         delay={60}
                         animateBy="words"
                         direction="top"
-                        className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-white tracking-tight leading-none mb-2"
+                        className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-neutral-900 tracking-tight leading-none mb-2"
                     />
                     <BlurText
                         text="extraordinary together."
                         delay={60}
                         animateBy="words"
                         direction="top"
-                        className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-white tracking-tight leading-none"
+                        className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-neutral-900 tracking-tight leading-none"
                     />
                 </div>
 
@@ -109,7 +109,7 @@ export const ContactPage = () => {
                             </span>
                             <AnimatedLink
                                 href="mailto:tuanngdinh.1608@gmail.com"
-                                className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight py-2"
+                                className="text-2xl sm:text-3xl md:text-4xl font-bold text-neutral-300 tracking-tight py-2"
                             >
                                 tuanngdinh.1608
                                 <span className="text-neutral-500">@gmail.com</span>
@@ -129,7 +129,7 @@ export const ContactPage = () => {
                                     <div key={link.name} className="contact-animate">
                                         <AnimatedLink
                                             href={link.href}
-                                            className="text-lg sm:text-xl md:text-2xl font-medium text-white py-1.5"
+                                            className="text-lg sm:text-xl md:text-2xl font-medium text-neutral-300 py-1.5"
                                         >
                                             {link.name}
                                         </AnimatedLink>
@@ -148,7 +148,7 @@ export const ContactPage = () => {
                                     <div key={info.label} className="contact-animate">
                                         <AnimatedLink
                                             href={info.value.startsWith("http") ? info.value : `mailto:${info.value}`}
-                                            className="text-lg sm:text-xl md:text-2xl font-medium text-white py-1.5"
+                                            className="text-lg sm:text-xl md:text-2xl font-medium text-neutral-300 py-1.5"
                                         >
                                             {info.label}
                                         </AnimatedLink>

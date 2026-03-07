@@ -6,6 +6,7 @@ import { SkillsPage } from "./components/pages/skills";
 import Preloader from "./components/Preloader";
 import { SmoothScroll } from "./components/SmoothScroll";
 import { ScrollProgress } from "./components/ScrollProgress";
+import { ScrollTransitionSVG } from "./components/ScrollTransitionSVG";
 
 function App() {
 
@@ -18,6 +19,7 @@ function App() {
         <ProjectsPage />
         <SkillsPage />
         <AboutPage />
+        <ScrollTransitionSVG />
         <ContactPage />
       </SmoothScroll>
     </>
