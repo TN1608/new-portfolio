@@ -25,6 +25,7 @@ export function SmoothScroll({ children }) {
         })
 
         lenisRef.current = lenis
+        window.__lenis = lenis  // Expose for other components to stop/start
 
         // Sync GSAP ScrollTrigger with Lenis
         lenis.on('scroll', ScrollTrigger.update)

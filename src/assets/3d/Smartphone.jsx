@@ -9,16 +9,37 @@ Title: Smartphone
 */
 
 import React from 'react'
-import { useGLTF } from '@react-three/drei'
+import { useGLTF, Html } from '@react-three/drei'
 
 export function Model(props) {
-  const { nodes, materials } = useGLTF('/smartphone-transformed.glb')
+  const { nodes, materials } = useGLTF('/models/smartphone-transformed.glb')
   return (
     <group {...props} dispose={null}>
+      {/* 3D Geometries */}
       <mesh geometry={nodes.Object_4.geometry} material={materials.PaletteMaterial001} position={[0.539, 0.502, 0.077]} rotation={[1.233, -0.19, 0.494]} scale={[1, 0.672, 1]} />
       <mesh geometry={nodes.Object_11.geometry} material={materials.PaletteMaterial002} rotation={[1.233, -0.19, 0.494]} />
+
+      {/* HTML Render Target mapped to the tilted orientation of the meshes */}
+      <Html
+        transform
+        distanceFactor={1.3}
+        position={[0, 0, 0.08]} // A bit forward to sit on the glass
+        rotation={[1.233, -0.19, 0.494]}
+        zIndexRange={[100, 0]}
+        occlude="blending"
+      >
+        <div
+          className="w-[280px] h-[550px] bg-neutral-950 rounded-[2.5rem] overflow-hidden flex flex-col items-center justify-center pointer-events-none select-none relative shadow-inner [mask-image:linear-gradient(to_bottom,black,transparent)]"
+          style={{ opacity: props.screenOpacity ?? 1 }}
+        >
+          {/* Soft internal glass glare */}
+          <div className="absolute top-0 left-0 w-full h-[30%] bg-gradient-to-b from-white/10 to-transparent skew-y-12 translate-y-[-50%] pointer-events-none" />
+
+          {props.children}
+        </div>
+      </Html>
     </group>
   )
 }
 
-useGLTF.preload('/smartphone-transformed.glb')
+useGLTF.preload('/models/smartphone-transformed.glb')
