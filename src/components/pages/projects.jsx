@@ -7,8 +7,65 @@ import { PROJECTS } from "@/assets/data/PROJECT.js"
 import { ExternalLink, Github, ArrowUpRight, ArrowLeft } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "../ui/separator"
+import { Canvas, useThree } from "@react-three/fiber"
+import { Environment, ContactShadows, OrbitControls } from "@react-three/drei"
+import { Model as C64Monitor } from "@/assets/3d/C64_monitor.jsx"
+import { Suspense } from "react"
 
 gsap.registerPlugin(ScrollTrigger)
+
+// Helper: 3D Monitor Scene with imperative GSAP animation
+const MonitorScene = ({ isDetailActive, project }) => {
+    const monitorRef = useRef()
+
+    useEffect(() => {
+        if (!monitorRef.current) return;
+
+        if (isDetailActive) {
+            // Zoom in: bring the monitor to the center and very close to the camera
+            // Since scale is now 0.12, we need z: 13.5 (Camera is at z: 15)
+            gsap.to(monitorRef.current.position, {
+                x: 0,
+                y: -1.2,
+                z: 13.5,
+                duration: 1.2,
+                ease: "power3.inOut"
+            })
+            gsap.to(monitorRef.current.rotation, {
+                x: 0,
+                y: 0,
+                z: 0,
+                duration: 1.2,
+                ease: "power3.inOut"
+            })
+        } else {
+            // Idle: shift monitor to the left to align with the list view left column
+            // These values depend on screen size, but -4 x is generally a good left offset in a 15z camera
+            const isMobile = window.innerWidth < 1024;
+            gsap.to(monitorRef.current.position, {
+                x: isMobile ? 0 : -5,
+                y: isMobile ? 2 : -2,
+                z: isMobile ? -5 : 0,
+                duration: 1.2,
+                ease: "power3.inOut"
+            })
+            gsap.to(monitorRef.current.rotation, {
+                x: 0.1,
+                y: 0.4,
+                z: -0.05,
+                duration: 1.2,
+                ease: "power3.inOut"
+            })
+        }
+    }, [isDetailActive])
+
+    return (
+        <group ref={monitorRef} position={[-5, -2, 0]} rotation={[0.1, 0.4, -0.05]} scale={0.12}>
+            {/* Always pass the hovered/active project image so the screen updates immediately */}
+            <C64Monitor image={project?.image} />
+        </group>
+    )
+}
 
 // Helper: render string or array
 const RenderField = ({ data }) => {
@@ -221,62 +278,63 @@ export const ProjectsPage = () => {
                 ref={showcaseRef}
                 className="relative h-screen overflow-hidden"
             >
+                {/* ─── 3D BACKGROUND CANVAS ─── */}
+                <div className="absolute inset-0 z-0 pointer-events-none">
+                    <Canvas camera={{ position: [0, 0, 15], fov: 45 }}>
+                        <Suspense fallback={null}>
+                            <ambientLight intensity={1.5} />
+                            <Environment preset="city" />
+                            <MonitorScene isDetailActive={selectedProject !== null} project={currentProject} />
+                            <ContactShadows position={[0, -4, 0]} opacity={0.4} scale={20} blur={2} />
+                        </Suspense>
+                    </Canvas>
+                </div>
+
                 {/* ─── LIST VIEW ─── */}
                 <div
                     ref={listViewRef}
-                    className="absolute inset-0 flex flex-col lg:flex-row items-center container mx-auto px-6 md:px-16"
+                    className="absolute inset-0 flex flex-col lg:flex-row items-center container mx-auto px-6 md:px-16 z-10 pointer-events-none"
                 >
                     {/* Left: Preview + Quick Info (recruiter-friendly) */}
                     <div className="w-full lg:w-[55%] flex flex-col justify-center h-full gap-5 pt-12 lg:pt-0">
-                        {/* Image */}
-                        <div
-                            className="relative w-full max-w-[520px] aspect-video rounded-2xl overflow-hidden shadow-lg border border-neutral-200 bg-neutral-200 cursor-pointer group"
-                            onClick={() => openDetail(currentProject)}
-                        >
-                            <img
-                                src={currentProject?.image}
-                                alt={currentProject?.title}
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                            />
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-all duration-300 flex items-end p-5">
-                                <span className="bg-white text-neutral-900 text-xs font-bold px-4 py-2 rounded-full opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 flex items-center gap-1.5 shadow-md">
-                                    View Case Study <ArrowUpRight className="w-3.5 h-3.5" />
-                                </span>
-                            </div>
-                        </div>
+                        {/* Invisible area - interaction removed for left side clicking to focus on title clicks */}
+                        <div className="relative w-full max-w-[520px] aspect-square lg:aspect-video" />
 
                         {/* Quick Identity: Title + Tagline */}
-                        <div className="max-w-[520px]">
-                            <h3 className="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight mb-1">
+                        <div className="max-w-[520px] pointer-events-auto mt-4 lg:mt-0 xl:mt-12 backdrop-blur-md bg-white/40 p-6 rounded-2xl shadow-sm border border-white/50">
+                            <h3
+                                className="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight mb-1 cursor-pointer hover:text-cyan-600 transition-colors inline-block"
+                                onClick={() => openDetail(currentProject)}
+                            >
                                 {currentProject?.title}
                             </h3>
-                            <p className="text-sm text-neutral-500 leading-relaxed mb-3">
+                            <p className="text-sm text-neutral-600 leading-relaxed mb-3">
                                 {currentTagline}
                             </p>
 
                             {/* Stack pills */}
-                            <div className="flex flex-wrap items-center gap-1.5 mb-3">
+                            <div className="flex flex-wrap items-center gap-1.5 mb-4">
                                 {currentTags.slice(0, 5).map((tag, i) => (
-                                    <span key={i} className="text-[11px] font-mono px-2.5 py-1 rounded-full bg-neutral-200 text-neutral-600 border border-neutral-200">
+                                    <span key={i} className="text-[11px] font-mono px-2.5 py-1 rounded-full bg-white text-neutral-700 border border-neutral-200 shadow-sm">
                                         {tag}
                                     </span>
                                 ))}
                                 {currentTags.length > 5 && (
-                                    <span className="text-[11px] font-mono text-neutral-400">+{currentTags.length - 5}</span>
+                                    <span className="text-[11px] font-mono text-neutral-500">+{currentTags.length - 5}</span>
                                 )}
                             </div>
 
                             {/* Quick links */}
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-4">
                                 {currentDemo && (
                                     <a href={currentDemo} target="_blank" rel="noopener noreferrer"
-                                        className="flex items-center gap-1 text-xs font-mono text-neutral-500 hover:text-neutral-900 transition-colors">
+                                        className="flex items-center gap-1.5 text-xs font-bold font-mono text-neutral-900 hover:text-cyan-600 transition-colors bg-white px-3 py-1.5 rounded-lg shadow-sm border border-neutral-100">
                                         <ExternalLink className="w-3.5 h-3.5" /> Live Demo
                                     </a>
                                 )}
                                 {currentGithub && (
                                     <a href={currentGithub} target="_blank" rel="noopener noreferrer"
-                                        className="flex items-center gap-1 text-xs font-mono text-neutral-500 hover:text-neutral-900 transition-colors">
+                                        className="flex items-center gap-1.5 text-xs font-bold font-mono text-neutral-600 hover:text-neutral-900 transition-colors bg-white px-3 py-1.5 rounded-lg shadow-sm border border-neutral-100">
                                         <Github className="w-3.5 h-3.5" /> Source
                                     </a>
                                 )}
@@ -285,7 +343,7 @@ export const ProjectsPage = () => {
                     </div>
 
                     {/* Right: Project Names */}
-                    <div className="w-full lg:w-[45%] flex flex-col items-start lg:items-end justify-center h-full pb-12 lg:pb-0">
+                    <div className="w-full lg:w-[45%] flex flex-col items-start lg:items-end justify-center h-full pb-12 lg:pb-0 pointer-events-auto">
                         <span className="text-xs font-mono uppercase tracking-[0.3em] text-neutral-400 mb-6 flex items-center gap-3">
                             My Projects <span className="w-10 h-px bg-neutral-300 inline-block" />
                         </span>
@@ -297,14 +355,14 @@ export const ProjectsPage = () => {
                                         key={project.title}
                                         onMouseEnter={() => handleHover(i)}
                                         onClick={() => openDetail(project)}
-                                        className="py-1.5 cursor-pointer text-left lg:text-right"
+                                        className="py-1.5 cursor-pointer text-left lg:text-right group"
                                     >
                                         <span className={`text-xl sm:text-2xl md:text-3xl lg:text-4xl tracking-tight transition-all duration-300 block ${isActive
-                                            ? "text-neutral-900 font-semibold"
-                                            : "text-neutral-400 hover:text-neutral-600 font-light"
+                                            ? "text-neutral-900 font-bold"
+                                            : "text-neutral-400 group-hover:text-neutral-600 font-light"
                                             }`}>
                                             {project.title}
-                                            {isActive && <span className="inline-block ml-2 text-neutral-300">·</span>}
+                                            {isActive && <span className="inline-block ml-2 text-cyan-500">·</span>}
                                         </span>
                                     </button>
                                 )
@@ -316,55 +374,24 @@ export const ProjectsPage = () => {
                 {/* ─── DETAIL VIEW (in-section, uses ScrollArea) ─── */}
                 <div
                     ref={detailViewRef}
-                    className="absolute inset-0 hidden flex-col lg:flex-row bg-neutral-100 z-50 h-full"
+                    className="absolute inset-0 hidden flex-col lg:flex-row z-10 pointer-events-none"
                 >
 
-                    {/* Left: Image */}
-                    <div className="detail-left w-full lg:w-[45%] h-[40%] lg:h-full flex flex-col gap-4 lg:gap-8 items-center justify-center p-6 lg:p-12 relative">
-                        {/* Mobile close button (only visible on small screens to save vertical space) */}
+                    {/* Left: Invisible blocker for the 3D Monitor Zoom area */}
+                    <div className="detail-left w-full lg:w-[45%] h-[40%] lg:h-full flex flex-col items-start justify-start p-6 relative pointer-events-none">
+                        {/* Mobile close button */}
                         <button
                             onClick={closeDetail}
-                            className="absolute top-4 left-4 lg:hidden p-2 bg-white rounded-full shadow-md z-10 hover:bg-neutral-100"
+                            className="absolute top-4 left-4 lg:hidden p-2 bg-white/50 backdrop-blur-md rounded-full shadow-md z-50 hover:bg-white pointer-events-auto"
                         >
                             <ArrowLeft className="w-5 h-5 text-neutral-900" />
                         </button>
-
-                        <div className="w-full max-w-md aspect-video rounded-2xl overflow-hidden shadow-lg mt-8 lg:mt-0">
-                            <img
-                                src={selectedProject?.image}
-                                alt={selectedProject?.title}
-                                className="w-full h-full object-cover"
-                            />
-                        </div>
-                        <div className="hidden lg:block h-px w-1/2 bg-neutral-200" />
-
-                        {/* CTA */}
-                        <div className="flex flex-wrap gap-3 pb-8">
-                            {(selectedProject?.links?.demo || selectedProject?.demo) && (
-                                <a
-                                    href={selectedProject.links?.demo || selectedProject.demo}
-                                    target="_blank" rel="noopener noreferrer"
-                                    className="px-6 py-2.5 bg-neutral-900 text-white font-bold rounded-xl hover:bg-black transition-colors flex items-center gap-2 text-sm"
-                                >
-                                    Live Preview <ExternalLink className="w-4 h-4" />
-                                </a>
-                            )}
-                            {(selectedProject?.links?.github || selectedProject?.github) && (
-                                <a
-                                    href={selectedProject.links?.github || selectedProject.github}
-                                    target="_blank" rel="noopener noreferrer"
-                                    className="px-6 py-2.5 bg-white text-neutral-900 border border-neutral-300 font-bold rounded-xl hover:bg-neutral-50 transition-colors flex items-center gap-2 text-sm"
-                                >
-                                    Source Code <Github className="w-4 h-4" />
-                                </a>
-                            )}
-                        </div>
                     </div>
 
                     {/* Right: Scrollable Content */}
-                    <div className="detail-right w-full lg:w-[55%] h-[60%] lg:h-full flex flex-col bg-neutral-100">
+                    <div className="detail-right w-full lg:w-[55%] h-[60%] lg:h-full flex flex-col bg-white/95 backdrop-blur-xl shadow-[0_0_40px_rgba(0,0,0,0.1)] pointer-events-auto border-l border-white/20">
                         <ScrollArea className="h-full w-full">
-                            <div className="py-10 lg:py-16 pr-8 lg:pr-16 pl-4 lg:pl-0 flex flex-col gap-8 max-w-xl">
+                            <div className="py-10 lg:py-16 pr-8 lg:pr-16 pl-6 lg:pl-10 flex flex-col gap-6 max-w-xl">
                                 {/* Back + Title */}
                                 <div>
                                     <button
@@ -374,9 +401,31 @@ export const ProjectsPage = () => {
                                         <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
                                         Back to projects
                                     </button>
-                                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-neutral-900 tracking-tight leading-tight mb-2">
+                                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-neutral-900 tracking-tight leading-tight mb-6">
                                         {selectedProject?.title}
                                     </h2>
+
+                                    {/* CTA */}
+                                    <div className="flex flex-wrap gap-3 mb-6">
+                                        {(selectedProject?.links?.demo || selectedProject?.demo) && (
+                                            <a
+                                                href={selectedProject.links?.demo || selectedProject.demo}
+                                                target="_blank" rel="noopener noreferrer"
+                                                className="px-5 py-2.5 bg-neutral-900 text-white font-bold rounded-xl hover:bg-black transition-colors flex items-center gap-2 text-sm shadow-md"
+                                            >
+                                                Live Preview <ExternalLink className="w-4 h-4" />
+                                            </a>
+                                        )}
+                                        {(selectedProject?.links?.github || selectedProject?.github) && (
+                                            <a
+                                                href={selectedProject.links?.github || selectedProject.github}
+                                                target="_blank" rel="noopener noreferrer"
+                                                className="px-5 py-2.5 bg-white text-neutral-900 border border-neutral-300 font-bold rounded-xl hover:bg-neutral-50 transition-colors flex items-center gap-2 text-sm shadow-sm"
+                                            >
+                                                Source Code <Github className="w-4 h-4" />
+                                            </a>
+                                        )}
+                                    </div>
                                     <p className="text-sm md:text-base text-neutral-500 italic block">
                                         {selectedProject?.tagline || selectedProject?.description}
                                     </p>

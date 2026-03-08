@@ -8,14 +8,40 @@ Source: https://sketchfab.com/3d-models/c64-monitor-b005d2125a1545ad9e0994e0deb5
 Title: C64 Monitor
 */
 
-import React from 'react'
-import { useGLTF } from '@react-three/drei'
+import React, { useRef, useMemo } from 'react'
+import { useGLTF, useTexture } from '@react-three/drei'
+import * as THREE from 'three'
 
-export function Model(props) {
+export function Model({ image, ...props }) {
   const { nodes, materials } = useGLTF('/models/c64_monitor-transformed.glb')
+
+  // Using a solid color if no image is provided so it looks like an active CRT
+  const texture = useTexture(image || '/img/placeholder.jpg', (tex) => {
+    // The default orientation for planes in THREE might require flipY adjustment depending on the texture
+    tex.flipY = false;
+  })
+
+  // We need to carefully position the plane over the monitor screen
+  // These coords are fine-tuned for the 'c64_monitor' bounding box screen area
   return (
     <group {...props} dispose={null}>
+      {/* Original monitor body */}
       <mesh geometry={nodes.Mesh_Default_0.geometry} material={materials.Default} />
+
+      {/* Screen texture overlay */}
+      <mesh
+        // Positioned slightly forward and up to sit on the CRT glass
+        position={[0, 2.5, 2.6]}
+        rotation={[-0.05, 0, 0]}
+        scale={[3.2, 2.3, 1]}
+      >
+        <planeGeometry args={[1, 1]} />
+        <meshBasicMaterial
+          map={texture}
+          toneMapped={false}
+          color="#ffffff"
+        />
+      </mesh>
     </group>
   )
 }
