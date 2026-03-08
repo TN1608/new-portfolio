@@ -8,36 +8,52 @@ Source: https://sketchfab.com/3d-models/smartphone-380280333c9f4fb8a21a53d18f678
 Title: Smartphone
 */
 
-import React from 'react'
-import { useGLTF, Html } from '@react-three/drei'
+import React, { useRef, useMemo } from 'react'
+import { useGLTF } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
+import * as THREE from 'three'
 
 export function Model(props) {
   const { nodes, materials } = useGLTF('/models/smartphone-transformed.glb')
+  const screenMatRef = useRef()
+
+  // Clone the original screen material and modify it for a vibrant look
+  const screenMaterial = useMemo(() => {
+    const mat = materials.PaletteMaterial001.clone()
+    mat.color = new THREE.Color('#08081a')
+    mat.emissive = new THREE.Color('#1a1a3e')
+    mat.emissiveIntensity = 0.6
+    mat.metalness = 0.85
+    mat.roughness = 0.15
+    return mat
+  }, [materials])
+
+  // Animate the screen with a slow pulsing color shift
+  useFrame((state) => {
+    const t = state.clock.elapsedTime
+    // Shift hue between deep blue and teal
+    const hue = 0.6 + Math.sin(t * 0.4) * 0.08
+    const lightness = 0.12 + Math.sin(t * 0.8) * 0.04
+    screenMaterial.emissive.setHSL(hue, 0.7, lightness)
+    screenMaterial.emissiveIntensity = 0.5 + Math.sin(t * 1.2) * 0.15
+  })
+
   return (
     <group {...props} dispose={null}>
-      {/* 3D Geometries */}
-      <mesh geometry={nodes.Object_4.geometry} material={materials.PaletteMaterial001} position={[0.539, 0.502, 0.077]} rotation={[1.233, -0.19, 0.494]} scale={[1, 0.672, 1]} />
-      <mesh geometry={nodes.Object_11.geometry} material={materials.PaletteMaterial002} rotation={[1.233, -0.19, 0.494]} />
-
-      {/* HTML Render Target mapped to the tilted orientation of the meshes */}
-      <Html
-        transform
-        distanceFactor={1.3}
-        position={[0, 0, 0.08]} // A bit forward to sit on the glass
+      {/* Screen — animated dark material */}
+      <mesh
+        geometry={nodes.Object_4.geometry}
+        material={screenMaterial}
+        position={[0.539, 0.502, 0.077]}
         rotation={[1.233, -0.19, 0.494]}
-        zIndexRange={[100, 0]}
-        occlude="blending"
-      >
-        <div
-          className="w-[280px] h-[550px] bg-neutral-950 rounded-[2.5rem] overflow-hidden flex flex-col items-center justify-center pointer-events-none select-none relative shadow-inner [mask-image:linear-gradient(to_bottom,black,transparent)]"
-          style={{ opacity: props.screenOpacity ?? 1 }}
-        >
-          {/* Soft internal glass glare */}
-          <div className="absolute top-0 left-0 w-full h-[30%] bg-gradient-to-b from-white/10 to-transparent skew-y-12 translate-y-[-50%] pointer-events-none" />
-
-          {props.children}
-        </div>
-      </Html>
+        scale={[1, 0.672, 1]}
+      />
+      {/* Phone body/frame — original */}
+      <mesh
+        geometry={nodes.Object_11.geometry}
+        material={materials.PaletteMaterial002}
+        rotation={[1.233, -0.19, 0.494]}
+      />
     </group>
   )
 }

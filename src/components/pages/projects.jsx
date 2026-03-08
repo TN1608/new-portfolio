@@ -46,27 +46,68 @@ export const ProjectsPage = () => {
                 scrollTrigger: {
                     trigger: transitionRef.current,
                     start: "top top",
-                    end: "+=150%",
+                    end: "+=200%",
                     scrub: 1,
                     pin: true,
                 }
             })
 
-            gsap.utils.toArray(".transition-img").forEach((img, i) => {
-                const speed = 1 + (i * 0.5)
+            // Title parallax and fade out
+            tl.to(".transition-title", {
+                y: -150,
+                opacity: 0,
+                scale: 1.2,
+                ease: "power2.inOut",
+                duration: 1
+            }, 0)
+
+            // Advanced Image Parallax Reveal Animation (Skiper71 style)
+            const wrappers = gsap.utils.toArray(".transition-img-wrapper")
+            const images = gsap.utils.toArray(".transition-img")
+
+            wrappers.forEach((wrapper, i) => {
+                const img = images[i]
+                const speed = 1 + (i * 0.3)
+
+                // Set initial states: wrapper is clipped from the bottom, image is scaled up
+                gsap.set(wrapper, {
+                    y: 100 + (50 * i),
+                    clipPath: "inset(100% 0% 0% 0%)",
+                    rotation: i % 2 === 0 ? -5 : 5
+                })
+                gsap.set(img, {
+                    scale: 1.6
+                })
+
+                // Reveal wrappers (unclip + move up + straighten)
+                tl.to(wrapper, {
+                    y: -50 * speed,
+                    clipPath: "inset(0% 0% 0% 0%)",
+                    rotation: i % 2 === 0 ? 3 : -3,
+                    ease: "power3.inOut",
+                    duration: 1.5
+                }, i * 0.15) // Stagger 
+
+                // Parallax scale down the image inside the wrapper simultaneously
                 tl.to(img, {
-                    y: (i % 2 === 0 ? -1 : 1) * 100 * speed,
-                    x: (i % 3 === 0 ? -1 : 1) * 50 * speed,
-                    rotation: i % 2 === 0 ? 15 : -15,
-                    opacity: 0, ease: "power1.inOut"
-                }, 0)
+                    scale: 1,
+                    ease: "power3.inOut",
+                    duration: 1.5
+                }, i * 0.15)
+
+                // Fade/Move them out at the very end to reveal the Projects List
+                tl.to(wrapper, {
+                    opacity: 0,
+                    y: -150 * speed,
+                    ease: "power2.in",
+                    duration: 0.6
+                }, 1.6 + (i * 0.1))
             })
 
-            tl.to(".transition-title", { scale: 1.5, opacity: 0, ease: "power2.in" }, 0)
-            tl.to(".zoom-mask", { scale: 30, opacity: 0, ease: "power3.in" }, 0.2)
+            // Reveal Showcase Section (Projects List)
             tl.fromTo(showcaseRef.current,
-                { opacity: 0, y: 100 },
-                { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.5)
+                { opacity: 0, y: 150 },
+                { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, 1.8)
         }, mainRef)
         return () => ctx.revert()
     }, [])
@@ -145,16 +186,29 @@ export const ProjectsPage = () => {
                 ref={transitionRef}
                 className="relative h-screen w-full overflow-hidden flex items-center justify-center bg-white"
             >
-                <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10">
                     <h2 className="transition-title text-[12vw] font-black text-neutral-900 tracking-tighter leading-none text-center">
                         SELECTED<br />WORKS
                     </h2>
                 </div>
-                <img src="/img/aboutme.jpg" alt="" className="transition-img absolute top-[10%] left-[10%] w-48 h-64 object-cover rounded-2xl shadow-2xl skew-y-6" />
-                <img src="/img/aboutme2.jpg" alt="" className="transition-img absolute bottom-[15%] right-[15%] w-64 h-48 object-cover rounded-2xl shadow-2xl -skew-y-3" />
-                <img src="/img/aboutme.jpg" alt="" className="transition-img absolute top-[20%] right-[20%] w-40 h-40 object-cover rounded-full shadow-2xl" />
-                <div className="zoom-mask absolute w-32 h-32 md:w-64 md:h-64 rounded-xl border-4 border-neutral-900 shadow-2xl flex items-center justify-center bg-neutral-100">
-                    <span className="text-xs font-bold uppercase tracking-widest text-neutral-900">Scroll</span>
+
+                {/* Advanced Parallax Image Reveals */}
+                <div className="absolute inset-0 z-20 pointer-events-none">
+                    <div className="transition-img-wrapper absolute top-[15%] left-[5%] md:left-[10%] w-32 md:w-56 h-48 md:h-72 rounded-2xl overflow-hidden shadow-2xl">
+                        <img src={PROJECTS[0]?.image} alt={PROJECTS[0]?.title} className="transition-img w-full h-full object-cover" />
+                    </div>
+
+                    <div className="transition-img-wrapper absolute bottom-[10%] right-[5%] md:right-[15%] w-48 md:w-72 h-32 md:h-48 rounded-2xl overflow-hidden shadow-2xl">
+                        <img src={PROJECTS[1]?.image} alt={PROJECTS[1]?.title} className="transition-img w-full h-full object-cover" />
+                    </div>
+
+                    <div className="transition-img-wrapper absolute top-[25%] right-[10%] md:right-[20%] w-24 md:w-48 h-24 md:h-48 rounded-2xl overflow-hidden shadow-2xl">
+                        <img src={PROJECTS[2]?.image} alt={PROJECTS[2]?.title} className="transition-img w-full h-full object-cover" />
+                    </div>
+
+                    <div className="transition-img-wrapper absolute bottom-[25%] left-[10%] md:left-[25%] w-40 md:w-72 h-40 md:h-56 rounded-3xl overflow-hidden shadow-2xl">
+                        <img src={PROJECTS[3]?.image || PROJECTS[0]?.image} alt="Preview 4" className="transition-img w-full h-full object-cover" />
+                    </div>
                 </div>
             </section>
 
@@ -262,20 +316,27 @@ export const ProjectsPage = () => {
                 {/* ─── DETAIL VIEW (in-section, uses ScrollArea) ─── */}
                 <div
                     ref={detailViewRef}
-                    className="absolute inset-0 hidden flex-row"
+                    className="absolute inset-0 hidden flex-col lg:flex-row bg-neutral-100 z-50 h-full"
                 >
 
-
                     {/* Left: Image */}
-                    <div className="detail-left w-full lg:w-[45%] h-full flex flex-col gap-8 items-center justify-center p-6 lg:p-12">
-                        <div className="w-full max-w-md aspect-video rounded-2xl overflow-hidden shadow-lg">
+                    <div className="detail-left w-full lg:w-[45%] h-[40%] lg:h-full flex flex-col gap-4 lg:gap-8 items-center justify-center p-6 lg:p-12 relative">
+                        {/* Mobile close button (only visible on small screens to save vertical space) */}
+                        <button
+                            onClick={closeDetail}
+                            className="absolute top-4 left-4 lg:hidden p-2 bg-white rounded-full shadow-md z-10 hover:bg-neutral-100"
+                        >
+                            <ArrowLeft className="w-5 h-5 text-neutral-900" />
+                        </button>
+
+                        <div className="w-full max-w-md aspect-video rounded-2xl overflow-hidden shadow-lg mt-8 lg:mt-0">
                             <img
                                 src={selectedProject?.image}
                                 alt={selectedProject?.title}
                                 className="w-full h-full object-cover"
                             />
                         </div>
-                        <div className="h-px w-1/2 bg-neutral-200" />
+                        <div className="hidden lg:block h-px w-1/2 bg-neutral-200" />
 
                         {/* CTA */}
                         <div className="flex flex-wrap gap-3 pb-8">
@@ -301,14 +362,14 @@ export const ProjectsPage = () => {
                     </div>
 
                     {/* Right: Scrollable Content */}
-                    <div className="detail-right w-full lg:w-[55%] h-full flex flex-col">
+                    <div className="detail-right w-full lg:w-[55%] h-[60%] lg:h-full flex flex-col bg-neutral-100">
                         <ScrollArea className="h-full w-full">
                             <div className="py-10 lg:py-16 pr-8 lg:pr-16 pl-4 lg:pl-0 flex flex-col gap-8 max-w-xl">
                                 {/* Back + Title */}
                                 <div>
                                     <button
                                         onClick={closeDetail}
-                                        className="flex items-center gap-2 text-sm font-mono text-neutral-400 hover:text-neutral-900 transition-colors cursor-pointer mb-4 group"
+                                        className="hidden lg:flex items-center gap-2 text-sm font-mono text-neutral-400 hover:text-neutral-900 transition-colors cursor-pointer mb-4 group"
                                     >
                                         <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
                                         Back to projects
@@ -316,7 +377,7 @@ export const ProjectsPage = () => {
                                     <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-neutral-900 tracking-tight leading-tight mb-2">
                                         {selectedProject?.title}
                                     </h2>
-                                    <p className="text-base text-neutral-500 italic">
+                                    <p className="text-sm md:text-base text-neutral-500 italic block">
                                         {selectedProject?.tagline || selectedProject?.description}
                                     </p>
                                 </div>
@@ -378,8 +439,8 @@ export const ProjectsPage = () => {
                             </div>
                         </ScrollArea>
                     </div>
-                </div>
-            </section>
-        </div>
+                </div >
+            </section >
+        </div >
     )
 }

@@ -5,7 +5,6 @@ import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { Canvas, useFrame } from "@react-three/fiber"
 import { Environment, Float, ContactShadows } from "@react-three/drei"
-import { EffectComposer, Bloom } from "@react-three/postprocessing"
 import { Model as Smartphone } from "@/assets/3d/Smartphone"
 import BlurText from "@/components/BlurText"
 import CountUp from "@/components/CountUp"
@@ -21,7 +20,6 @@ const proxy = {
     rotX: 0,
     rotY: 0,
     rotZ: 0,
-    screenOpacity: 0,
     scale: 2.2
 }
 
@@ -39,31 +37,7 @@ const PhoneAnimator = () => {
     return (
         <group ref={groupRef}>
             <Float speed={2} rotationIntensity={0.2} floatIntensity={0.5}>
-                <Smartphone screenOpacity={proxy.screenOpacity}>
-                    {/* The UI inside the phone screen */}
-                    <div className="w-full h-full flex flex-col justify-between p-6 tracking-tight relative">
-                        <div className="flex justify-between items-center text-white/50 text-[10px] font-mono mb-4 w-full">
-                            <span>9:41</span>
-                            <div className="flex gap-1">
-                                <div className="w-4 h-2 rounded-sm bg-white/50"></div>
-                                <div className="w-5 h-2 rounded-sm bg-white/50"></div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4 flex-1 mt-8">
-                            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-blue-500 to-emerald-400 opacity-80 shadow-[0_0_30px_rgba(56,189,248,0.6)]"></div>
-                            <h2 className="text-[2.5rem] font-black text-white leading-[0.9] tracking-tighter">PORT<br />FOLIO<br />SYS_</h2>
-                            <p className="text-white/60 text-xs font-mono mt-4">INITIALIZING SEQUENCE...</p>
-                        </div>
-
-                        <div className="h-24 w-full bg-white/5 rounded-2xl border border-white/10 p-4 flex flex-col gap-3 relative overflow-hidden backdrop-blur-md">
-                            <div className="w-full h-3 bg-white/20 rounded-full overflow-hidden">
-                                <div className="h-full bg-blue-500 w-3/4 shadow-[0_0_15px_rgba(59,130,246,0.8)]"></div>
-                            </div>
-                            <span className="text-[10px] text-white/50 font-mono tracking-widest uppercase">LOADING SKILLS_OBJ</span>
-                        </div>
-                    </div>
-                </Smartphone>
+                <Smartphone />
             </Float>
         </group>
     )
@@ -155,22 +129,45 @@ export const SkillsPage = () => {
             const holdXpTime = afterSkillsTime + 2.5
             tl.to({}, { duration: 1 }) // Hold XP on screen
 
-            // ── PHASE 3: Center & Show Stats (Dramatic Upward Tilt) ──
-            tl.to(proxy, { x: 0, y: 0.5, z: 1, rotX: -0.3, rotY: 0, rotZ: 0, ease: "power3.inOut", duration: 1.5 }, holdXpTime)
+            // ── PHASE 3: Rotate Landscape & Center for Stats ──
+            const statsTime = holdXpTime + 0.5
 
             // Fade out xp
-            tl.to(xpListRef.current, { opacity: 0, y: -50, duration: 0.8 }, holdXpTime)
+            tl.to(xpListRef.current, { opacity: 0, y: -50, duration: 0.8 }, statsTime)
 
-            // Show Stats at bottom
+            // Phone turns horizontal (landscape) and zooms in a bit
+            tl.to(proxy, {
+                x: 0,
+                y: 0,
+                z: 3,
+                rotX: 0,
+                rotY: 0,
+                rotZ: -Math.PI / 2, // Rotate exactly 90 degrees
+                ease: "power3.inOut",
+                duration: 1.5
+            }, statsTime)
+
+            // Show Stats
             tl.fromTo(statsRef.current,
-                { opacity: 0, y: 100 },
-                { opacity: 1, y: 0, duration: 1, ease: "back.out(1.5)" }, holdXpTime + 0.5
+                { opacity: 0, scale: 0.8 },
+                { opacity: 1, scale: 1, duration: 1, ease: "back.out(1.2)" }, statsTime + 1
             )
 
-            tl.fromTo(".stat-item",
-                { opacity: 0, scale: 0.8 },
-                { opacity: 1, scale: 1, stagger: 0.2, duration: 0.8 }, holdXpTime + 0.8
-            )
+            // ── PHASE 4: Zoom Into Screen (Transition to next section) ──
+            const finalZoomTime = statsTime + 3
+
+            // Fade out stats
+            tl.to(statsRef.current, { opacity: 0, scale: 1.2, duration: 0.5 }, finalZoomTime)
+
+            // Extreme zoom into the screen
+            tl.to(proxy, {
+                z: 15, // Zoom past the camera
+                ease: "expo.in",
+                duration: 1.5
+            }, finalZoomTime + 0.2)
+
+            // Fade the entire scene to black/white at the very end
+            tl.to(containerRef.current, { opacity: 0, ease: "power2.in", duration: 1 }, finalZoomTime + 0.5)
 
         }, sectionRef)
 
@@ -279,37 +276,35 @@ export const SkillsPage = () => {
                     </div>
                 </div>
 
-                {/* ── STATS ROW (BOTTOM CENTER) ── */}
+                {/* ── STATS ROW (CENTERED, FOR LANDSCAPE PHONE) ── */}
                 <div
                     ref={statsRef}
-                    className="absolute bottom-12 w-full flex justify-center opacity-0 pointer-events-auto"
+                    className="absolute inset-0 flex items-center justify-center opacity-0 pointer-events-auto"
                 >
-                    <div className="w-full max-w-4xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-12">
+                    {/* Shifted and rotated to match the phone's natural 3D perspective resting angle */}
+                    <div className="w-full max-w-5xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 relative z-50 -translate-x-8 -translate-y-2 md:-translate-x-12 md:-translate-y-4 rotate-[14deg] scale-[0.9]">
                         {SKILLS_STATS.map((stat, i) => {
-                            // Extract numeric portion if it exists for CountUp
-                            const numMatch = stat.value.match(/(\d+(?:\.\d+)?)/)
-                            const numValue = numMatch ? parseFloat(numMatch[1]) : null
-                            const hasPlus = stat.value.includes('+')
-                            const prefix = stat.value.split(numMatch?.[0])[0] || ""
-                            const suffix = (stat.value.split(numMatch?.[0])[1] || "") + (hasPlus && !stat.value.split(numMatch?.[0])[1]?.includes('+') ? "+" : "")
+                            let content;
+
+                            // Handle specific stat formats manually for perfection
+                            if (stat.label === "Projects Completed") {
+                                content = <><CountUp from={0} to={6} duration={2} />+</>
+                            } else if (stat.label === "Graduated") {
+                                content = <>May&nbsp;<CountUp from={2000} to={2025} duration={2} separator="" startWhen={true} /></>
+                            } else if (stat.label === "Years Experience") {
+                                content = <><CountUp from={0} to={1.5} duration={2} />+</>
+                            } else if (stat.label === "GPA") {
+                                content = <>(<CountUp from={0} to={3.42} duration={2} />/4.00)</>
+                            } else {
+                                content = stat.value
+                            }
 
                             return (
                                 <div key={i} className="stat-item flex flex-col items-center text-center">
-                                    <span className="text-4xl md:text-5xl font-black text-neutral-900 tracking-tighter mb-2 flex items-center">
-                                        {prefix}
-                                        {numValue !== null ? (
-                                            <CountUp
-                                                from={0}
-                                                to={numValue}
-                                                duration={2}
-                                                separator=","
-                                            />
-                                        ) : (
-                                            stat.value
-                                        )}
-                                        {suffix}
+                                    <span className="text-3xl md:text-4xl lg:text-5xl font-black text-neutral-900 tracking-tighter mb-2 font-mono flex items-center">
+                                        {content}
                                     </span>
-                                    <span className="text-xs font-mono uppercase tracking-widest text-neutral-500">
+                                    <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500">
                                         {stat.label}
                                     </span>
                                 </div>
