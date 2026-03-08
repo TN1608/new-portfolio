@@ -10,192 +10,112 @@ gsap.registerPlugin(ScrollTrigger)
 const STORY_SECTIONS = [
     {
         tag: "01 — INTRODUCTION",
-        heading: "Hi, I'm Tuan.",
-        body: "A Frontend-Focused Fullstack Developer who crafts digital experiences that feel alive. I believe great interfaces aren't just seen — they're felt.",
+        heading: "Crafting Experiences.",
+        body: "Hi, I'm Tuan. I bridge the gap between engineering and design, turning complex logic into intuitive, pixel-perfect interfaces that truly feel alive.",
         image: "/img/aboutme.jpg",
         imageAlt: "Nguyen Dinh Tuan",
-        layout: "image-right",
+        layout: "right"
     },
     {
-        tag: "02 — ORIGIN",
-        heading: "Where It Began",
-        body: "My journey started with a simple question: how do the websites I admire actually work? That curiosity led me into code editors, terminal windows, and countless late-night debugging sessions that became the foundation of everything I build today.",
+        tag: "02 — EVOLUTION",
+        heading: "Beyond Static Webs.",
+        body: "Websites shouldn't just be read; they should be experienced. I leverage modern tools like React, GSAP, and 3D rendering to create fluid, storytelling-driven journeys.",
         image: "/img/aboutme2.jpg",
-        imageAlt: "Tuan exploring development",
-        layout: "image-left",
+        imageAlt: "Exploring development code",
+        layout: "left"
     },
     {
-        tag: "03 — CRAFT",
-        heading: "What I Do",
-        body: "With over 2 years of experience, I work primarily with React and modern JavaScript to build responsive, performant interfaces. I also develop backend APIs and architect databases — giving me a fullstack perspective that shapes how I approach every project.",
+        tag: "03 — VISION",
+        heading: "Every Pixel Matters.",
+        body: "From resilient database architectures to the finest easing curve in an animation, I care deeply about the complete picture and the final user experience.",
         image: "/img/aboutme.jpg",
-        imageAlt: "Working on code",
-        layout: "image-right",
-    },
-    {
-        tag: "04 — FRONTIER",
-        heading: "What Excites Me Now",
-        body: "I'm currently diving deep into animation systems, smooth scroll interactions, and 3D web experiences. I love pushing the boundary between engineering and art — turning every pixel into a purposeful moment.",
-        image: "/img/aboutme2.jpg",
         imageAlt: "Creative exploration",
-        layout: "image-left",
+        layout: "center"
     },
 ]
 
 export const AboutPage = () => {
     const sectionRef = useRef(null)
+    const blocksRef = useRef([])
 
     useEffect(() => {
         const ctx = gsap.context(() => {
-            // ──────────────────────────────────────────────
-            // Kaitonote-style image reveal:
-            //   1. Container = overflow:hidden mask
-            //   2. Image starts translated DOWN (hidden below mask bottom)
-            //   3. As container enters viewport, image slides UP through the mask
-            //   4. Image moves at slower rate = parallax depth effect
-            // ──────────────────────────────────────────────
 
-            const blocks = document.querySelectorAll(".about-story-block")
+            // ── HERO INTRO ANIMATION ──
+            gsap.fromTo(".about-hero-fade",
+                { opacity: 0, y: 30 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 1.2,
+                    stagger: 0.2,
+                    ease: "power3.out",
+                    scrollTrigger: {
+                        trigger: sectionRef.current,
+                        start: "top 75%",
+                    }
+                }
+            )
 
-            blocks.forEach((block) => {
-                const imageWrapper = block.querySelector(".about-image-mask")
-                const img = block.querySelector(".about-image-inner")
-                const content = block.querySelector(".about-story-content")
-                const tag = block.querySelector(".about-story-tag")
-                const line = block.querySelector(".about-story-line")
-                const heading = block.querySelector(".about-story-heading")
-                const body = block.querySelector(".about-story-body")
-                const number = block.querySelector(".about-story-number")
+            // ── STORY BLOCKS ANIMATION ──
+            blocksRef.current.forEach((block) => {
+                if (!block) return;
 
-                // ── IMAGE PARALLAX REVEAL ──
-                // The wrapper acts as a viewport/window.
-                // The img inside is taller (130%) and slides through it.
-                if (img) {
-                    gsap.fromTo(img, {
-                        yPercent: 20,
-                        scale: 1.15,
-                    }, {
-                        yPercent: -20,
-                        scale: 1,
-                        ease: "none",
-                        scrollTrigger: {
-                            trigger: imageWrapper,
-                            start: "top bottom",
-                            end: "bottom top",
-                            scrub: true,
-                        }
-                    })
+                const tag = block.querySelector(".story-tag");
+                const line = block.querySelector(".story-line");
+                const heading = block.querySelector(".story-heading");
+                const words = block.querySelectorAll(".story-word");
+                const imageWrapper = block.querySelector(".story-image-mask");
+                const imageInner = block.querySelector(".story-image-inner");
+
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: block,
+                        start: "top 75%",
+                        // toggleActions: play pause resume reverse
+                    }
+                });
+
+                // 1. Tag & Line Reveal
+                if (tag && line) {
+                    tl.fromTo(tag, { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.6, ease: "power2.out" }, 0)
+                    tl.fromTo(line, { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: "power2.out" }, 0)
                 }
 
-                // ── IMAGE WRAPPER OPACITY REVEAL (subtle) ──
-                if (imageWrapper) {
-                    gsap.fromTo(imageWrapper, {
-                        opacity: 0,
-                        y: 80,
-                    }, {
-                        opacity: 1,
-                        y: 0,
-                        duration: 1,
-                        ease: "power2.out",
-                        scrollTrigger: {
-                            trigger: imageWrapper,
-                            start: "top 90%",
-                            end: "top 50%",
-                            scrub: 1,
-                        }
-                    })
-                }
-
-                // ── TEXT ANIMATIONS ──
-                // Tag + line
-                if (tag) {
-                    gsap.fromTo(tag, {
-                        opacity: 0,
-                        x: -15,
-                    }, {
-                        opacity: 1,
-                        x: 0,
-                        duration: 0.8,
-                        ease: "power3.out",
-                        scrollTrigger: {
-                            trigger: content,
-                            start: "top 80%",
-                            toggleActions: "play none none reverse",
-                        }
-                    })
-                }
-
-                if (line) {
-                    gsap.fromTo(line, {
-                        scaleX: 0,
-                    }, {
-                        scaleX: 1,
-                        duration: 0.8,
-                        ease: "power3.out",
-                        scrollTrigger: {
-                            trigger: content,
-                            start: "top 80%",
-                            toggleActions: "play none none reverse",
-                        }
-                    })
-                }
-
-                // Heading slide up
+                // 2. Heading Fade Up
                 if (heading) {
-                    gsap.fromTo(heading, {
-                        y: 40,
-                        opacity: 0,
-                    }, {
-                        y: 0,
-                        opacity: 1,
-                        duration: 1,
-                        ease: "power3.out",
-                        scrollTrigger: {
-                            trigger: content,
-                            start: "top 75%",
-                            toggleActions: "play none none reverse",
-                        }
-                    })
+                    tl.fromTo(heading,
+                        { opacity: 0, y: 30 },
+                        { opacity: 1, y: 0, duration: 0.8, ease: "back.out(1.2)" },
+                        0.2
+                    )
                 }
 
-                // Body slide up (staggered)
-                if (body) {
-                    gsap.fromTo(body, {
-                        y: 30,
-                        opacity: 0,
-                    }, {
-                        y: 0,
-                        opacity: 1,
-                        duration: 1,
-                        ease: "power3.out",
-                        delay: 0.15,
-                        scrollTrigger: {
-                            trigger: content,
-                            start: "top 75%",
-                            toggleActions: "play none none reverse",
-                        }
-                    })
+                // 3. Word by Word Body Text Reveal (GSAP storytelling)
+                if (words.length > 0) {
+                    tl.fromTo(words,
+                        { opacity: 0, y: 15, filter: "blur(4px)" },
+                        { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.8, stagger: 0.04, ease: "power2.out" },
+                        0.4
+                    )
                 }
 
-                // Decorative number
-                if (number) {
-                    gsap.fromTo(number, {
-                        y: 20,
-                        opacity: 0,
-                    }, {
-                        y: 0,
-                        opacity: 1,
-                        duration: 1,
-                        ease: "power3.out",
-                        delay: 0.25,
-                        scrollTrigger: {
-                            trigger: content,
-                            start: "top 75%",
-                            toggleActions: "play none none reverse",
-                        }
-                    })
+                // 4. Parallax Image Mask Reveal
+                // Image container is unmasked from bottom to top, image scales down slightly
+                if (imageWrapper && imageInner) {
+                    tl.fromTo(imageWrapper,
+                        { clipPath: "inset(100% 0% 0% 0%)" },
+                        { clipPath: "inset(0% 0% 0% 0%)", duration: 1.5, ease: "power4.inOut" },
+                        0.3
+                    )
+                    tl.fromTo(imageInner,
+                        { scale: 1.4 },
+                        { scale: 1, duration: 1.5, ease: "power4.inOut" },
+                        0.3
+                    )
                 }
             })
+
         }, sectionRef)
 
         return () => ctx.revert()
@@ -205,87 +125,70 @@ export const AboutPage = () => {
         <section
             ref={sectionRef}
             id="about"
-            className="relative overflow-hidden"
+            className="relative bg-white text-neutral-900 pb-32"
         >
             {/* ── HERO INTRO ── */}
-            <div className="min-h-[70vh] flex flex-col items-center justify-center px-6 text-center">
-                <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-neutral-500 mb-6 block">
-                    About Me
+            <div className="min-h-[60vh] flex flex-col items-center justify-center px-6 text-center pt-32 pb-16">
+                <span className="about-hero-fade text-[10px] md:text-sm font-mono uppercase tracking-[0.4em] text-neutral-400 mb-6 block">
+                    Focus & Identity
                 </span>
                 <BlurText
                     text="The Story Behind the Code"
-                    delay={80}
-                    animateBy="words"
-                    direction="top"
-                    className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-neutral-900 tracking-tight justify-center text-center mb-4"
-                />
-                <BlurText
-                    text="Developer. Design thinker. Pixel perfectionist."
                     delay={60}
                     animateBy="words"
                     direction="top"
-                    className="text-sm sm:text-base md:text-lg text-neutral-500 max-w-lg justify-center text-center"
+                    className="text-4xl sm:text-5xl md:text-7xl lg:text-[80px] font-black text-neutral-900 tracking-tight leading-none justify-center text-center mb-6"
                 />
+                <h2 className="about-hero-fade text-sm sm:text-base md:text-xl text-neutral-500 max-w-2xl mx-auto font-medium">
+                    Developer. Design thinker. Pixel perfectionist.
+                </h2>
             </div>
 
-            {/* ── STORY BLOCKS ── */}
-            <div className="max-w-6xl mx-auto px-6 md:px-12 pb-32 space-y-24 md:space-y-40">
+            {/* ── INLINE STORYTELLING BLOCKS ── */}
+            <div className="w-full max-w-7xl mx-auto px-6 md:px-12 flex flex-col gap-32 md:gap-48 mt-10">
                 {STORY_SECTIONS.map((section, i) => {
-                    const isImageRight = section.layout === "image-right"
-                    // Staggered vertical offset for floating feel (kaitonote style)
-                    const imageOffset = i % 2 === 0 ? "lg:mt-0" : "lg:mt-20"
+                    const isRight = section.layout === "right"
+                    const isCenter = section.layout === "center"
 
                     return (
                         <div
                             key={i}
-                            className={`about-story-block flex flex-col ${isImageRight ? "lg:flex-row" : "lg:flex-row-reverse"
-                                } items-start gap-10 lg:gap-20`}
+                            ref={el => blocksRef.current[i] = el}
+                            className={`flex flex-col ${isCenter ? 'items-center text-center' : (isRight ? 'md:flex-row' : 'md:flex-row-reverse')} items-center gap-12 md:gap-24`}
                         >
-                            {/* ── IMAGE (Kaitonote parallax window) ── */}
-                            <div className={`w-full lg:w-[55%] ${imageOffset}`}>
-                                {/*
-                                  The mask container:
-                                  - overflow-hidden crops the image
-                                  - Fixed aspect ratio creates the "window"
-                                  - Image inside is scaled 130% to allow parallax travel
-                                */}
-                                <div className="about-image-mask relative overflow-hidden rounded-2xl aspect-[3/4] sm:aspect-[4/5] bg-neutral-900">
-                                    <img
-                                        src={section.image}
-                                        alt={section.imageAlt}
-                                        className="about-image-inner absolute inset-0 w-full h-[130%] object-cover will-change-transform"
-                                    />
-                                    {/* Subtle gradient at bottom */}
-                                    <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-neutral-950/40 to-transparent pointer-events-none" />
-                                </div>
-                            </div>
-
-                            {/* ── CONTENT ── */}
-                            <div className={`about-story-content w-full lg:w-[45%] ${isImageRight ? "lg:pr-4" : "lg:pl-4"
-                                } flex flex-col justify-center lg:pt-16`}>
+                            {/* ── TEXT CONTENT ── */}
+                            <div className={`w-full ${isCenter ? 'max-w-3xl' : 'md:w-1/2'} flex flex-col ${isCenter ? 'items-center' : ''}`}>
                                 {/* Tag with line */}
-                                <div className="flex items-center gap-3 mb-6">
-                                    <span className="about-story-tag text-xs font-bold font-mono uppercase tracking-[0.2em] text-neutral-500">
+                                <div className={`flex items-center gap-4 mb-6 ${isCenter ? 'justify-center' : ''}`}>
+                                    <span className="story-tag text-xs font-bold font-mono uppercase tracking-[0.2em] text-neutral-400">
                                         {section.tag}
                                     </span>
-                                    <div className="about-story-line h-px w-12 bg-neutral-300 origin-left" />
+                                    {!isCenter && <div className="story-line h-px w-16 bg-neutral-300 origin-left" />}
                                 </div>
 
                                 {/* Heading */}
-                                <h3 className="about-story-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-neutral-900 tracking-tight leading-tight mb-6">
+                                <h3 className="story-heading text-4xl sm:text-5xl md:text-6xl font-black text-neutral-900 tracking-tight leading-[1.1] mb-6">
                                     {section.heading}
                                 </h3>
 
-                                {/* Body */}
-                                <p className="about-story-body text-base sm:text-lg md:text-xl font-medium text-neutral-600 leading-relaxed max-w-xl">
-                                    {section.body}
+                                {/* Body with Word Splitting for GSAP Animation */}
+                                <p className={`text-lg md:text-2xl font-medium text-neutral-500 leading-relaxed flex flex-wrap gap-x-[0.3em] gap-y-[0.2em] ${isCenter ? 'justify-center' : ''}`}>
+                                    {section.body.split(" ").map((word, wordIndex) => (
+                                        <span key={wordIndex} className="story-word inline-block will-change-[transform,opacity,filter]">
+                                            {word}
+                                        </span>
+                                    ))}
                                 </p>
+                            </div>
 
-                                {/* Decorative number */}
-                                <div className="about-story-number mt-8">
-                                    <span className="text-7xl sm:text-8xl md:text-9xl font-black text-neutral-900/3 leading-none font-mono select-none">
-                                        {String(i + 1).padStart(2, "0")}
-                                    </span>
+                            {/* ── INLINE IMAGE REVEAL ── */}
+                            <div className={`w-full ${isCenter ? 'max-w-5xl h-[40vh] md:h-[60vh] mt-10' : 'md:w-1/2 h-[50vh] md:h-[70vh]'}`}>
+                                <div className="story-image-mask w-full h-full relative overflow-hidden rounded-3xl shadow-2xl">
+                                    <img
+                                        src={section.image}
+                                        alt={section.imageAlt}
+                                        className="story-image-inner absolute inset-0 w-full h-full object-cover will-change-transform"
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -293,16 +196,17 @@ export const AboutPage = () => {
                 })}
             </div>
 
-            {/* ── TRANSITION TO CONTACT ── */}
-            <div className="py-28 md:py-40 px-6 text-center">
+            {/* ── FOOTER TRANSITION TO NEXT SECTION ── */}
+            <div className="pt-40 px-6 text-center">
+                <div className="w-px h-24 bg-neutral-300 mx-auto mb-10" />
                 <BlurText
                     text="I enjoy turning ideas into polished digital products that combine good engineering with thoughtful design."
                     delay={40}
                     animateBy="words"
                     direction="top"
-                    className="text-lg sm:text-xl md:text-2xl text-neutral-500 max-w-3xl mx-auto justify-center text-center italic mb-6"
+                    className="text-xl sm:text-2xl md:text-4xl text-neutral-800 max-w-4xl mx-auto justify-center text-center font-bold leading-snug mb-8"
                 />
-                <p className="text-xs font-mono text-neutral-600 tracking-widest uppercase">
+                <p className="text-xs font-mono text-neutral-400 tracking-[0.3em] uppercase">
                     — Nguyen Dinh Tuan
                 </p>
             </div>
