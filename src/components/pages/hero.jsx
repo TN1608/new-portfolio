@@ -5,7 +5,7 @@ import { Meteors } from "@/components/meteors.jsx";
 import RotatingText from "@/components/RotatingText.jsx";
 import BlurText from "@/components/BlurText.jsx";
 
-export const Hero = forwardRef(({ onViewWork, onContact }, ref) => {
+export const Hero = forwardRef((props, ref) => {
     return (
         <section
             ref={ref}
@@ -54,10 +54,10 @@ export const Hero = forwardRef(({ onViewWork, onContact }, ref) => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.6, duration: 0.5 }}
                 >
-                    <Button size="lg" onClick={onViewWork}>
+                    <Button size="lg" onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })}>
                         View My Work
                     </Button>
-                    <Button size="lg" variant="outline" onClick={onContact}>
+                    <Button size="lg" variant="outline" onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}>
                         Contact Me
                     </Button>
                 </motion.div>

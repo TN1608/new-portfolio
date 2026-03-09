@@ -108,7 +108,7 @@ export const ContactPage = () => {
                                 Say hello
                             </span>
                             <AnimatedLink
-                                href="mailto:tuanngdinh.1608@gmail.com"
+                                href="mailto:tuanngdinh.1608@gmail.com?subject=Collaboration%20Inquiry%20%E2%80%93%20From%20Your%20Portfolio&body=Hi%20Tuan%2C%0A%0AI%20came%20across%20your%20portfolio%20and%20was%20impressed%20by%20your%20work.%20I%E2%80%99d%20love%20to%20discuss%20a%20potential%20opportunity.%0A%0ABest%20regards%2C%0A%5BYour%20Name%5D"
                                 className="text-2xl sm:text-3xl md:text-4xl font-bold text-neutral-300 tracking-tight py-2"
                             >
                                 tuanngdinh.1608

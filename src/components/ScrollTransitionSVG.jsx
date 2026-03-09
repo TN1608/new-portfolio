@@ -45,7 +45,7 @@ export function ScrollTransitionSVG() {
         <div
             ref={containerRef}
             className="relative w-full overflow-hidden pointer-events-none select-none"
-            style={{ height: "clamp(200px, 30vh, 400px)" }}
+            style={{ height: "clamp(80px, 12vh, 160px)" }}
         >
             <svg
                 viewBox="0 0 1200 400"

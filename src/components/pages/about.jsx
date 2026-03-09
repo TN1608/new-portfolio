@@ -28,8 +28,8 @@ const STORY_SECTIONS = [
         tag: "03 — VISION",
         heading: "Every Pixel Matters.",
         body: "From resilient database architectures to the finest easing curve in an animation, I care deeply about the complete picture and the final user experience.",
-        image: "/img/aboutme.jpg",
-        imageAlt: "Creative exploration",
+        image: "/img/team_pics.jpg",
+        imageAlt: "Graduation Project Team and Personal Growth",
         layout: "center"
     },
 ]
@@ -125,7 +125,7 @@ export const AboutPage = () => {
         <section
             ref={sectionRef}
             id="about"
-            className="relative bg-white text-neutral-900 pb-32"
+            className="relative bg-white text-neutral-900 pb-12"
         >
             {/* ── HERO INTRO ── */}
             <div className="min-h-[60vh] flex flex-col items-center justify-center px-6 text-center pt-32 pb-16">

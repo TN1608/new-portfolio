@@ -7,12 +7,14 @@ import Preloader from "./components/Preloader";
 import { SmoothScroll } from "./components/SmoothScroll";
 import { ScrollProgress } from "./components/ScrollProgress";
 import { ScrollTransitionSVG } from "./components/ScrollTransitionSVG";
+import { Navbar } from "./components/fragments/navbar";
 
 function App() {
 
   return (
     <>
       <Preloader />
+      <Navbar />
       <ScrollProgress />
       <SmoothScroll>
         <Hero />
@@ -24,7 +26,7 @@ function App() {
       </SmoothScroll>
 
       {/* ── 3D PERFORMANCE WARNING ── */}
-      <div className="fixed bottom-4 right-4 z-50 pointer-events-none text-right flex flex-col items-end gap-1 px-4 opacity-50 transition-opacity duration-300">
+      <div className="fixed bottom-4 right-4 z-50 pointer-events-none text-right hidden md:flex flex-col items-end gap-1 px-4 opacity-50 transition-opacity duration-300">
         <div className="flex items-center gap-1.5 text-[11px] text-neutral-400 font-mono uppercase tracking-widest">
           <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></div>
           WebGL 3D
