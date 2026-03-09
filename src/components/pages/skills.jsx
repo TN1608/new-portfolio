@@ -111,10 +111,11 @@ export const SkillsPage = () => {
             tl.set(arrowImg, { opacity: 0 }, 1.4)
             tl.set(handImg, { opacity: 1 }, 1.4)
 
-            // Sequence through each skill category (fade in, hold, fade out)
+            // Sequence through each skill category with a dynamic "burst/hologram" effect
             const categories = gsap.utils.toArray(".skill-category-item")
+
             categories.forEach((cat, i) => {
-                const startTime = 1.5 + (i * 1.5)
+                const startTime = 1.5 + (i * 2) // Gave it a bit more time to breathe (2s instead of 1.5s)
                 const clickTime = startTime - 0.2
 
                 // Lively Cursor click: scale down and bounce back
@@ -135,23 +136,76 @@ export const SkillsPage = () => {
                     clickTime
                 )
 
-                // Fade In
-                tl.fromTo(cat,
-                    { opacity: 0, y: 50 },
-                    { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" },
+                // ── Fancy Skill Tags Burst Reveal ──
+                // Select the category title and individual skill tags within it
+                const catTitle = cat.querySelector(".cat-title")
+                const tags = cat.querySelectorAll(".skill-tag")
+
+                // Make the category container visible
+                tl.set(cat, { opacity: 1 }, startTime)
+
+                // The 3D Phone reacts to the click/burst!
+                // It does a subtle tilt/swivel as if emitting the hologram
+                tl.to(proxy, {
+                    rotX: () => 0.15 + gsap.utils.random(-0.05, 0.05),
+                    rotY: () => (Math.PI / 6) + gsap.utils.random(-0.1, 0.1),
+                    z: () => 0.5 + gsap.utils.random(0.1, 0.4), // slight zoom bounce
+                    duration: 0.8,
+                    ease: "back.out(2)"
+                }, clickTime)
+                // settle phone back
+                tl.to(proxy, { z: 0.5, duration: 1.2, ease: "power2.out" }, clickTime + 0.8)
+
+                // 1. Reveal the Category Title dropping down
+                tl.fromTo(catTitle,
+                    { opacity: 0, y: -20, scale: 0.9 },
+                    { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.5)" },
                     startTime
                 )
 
-                // Hold
-                tl.to({}, { duration: 0.5 })
+                // 2. Playful Stagger Reveal from Natural Flexbox Positions
+                tl.fromTo(tags,
+                    {
+                        opacity: 0,
+                        y: 40,
+                        scale: 0.5,
+                        rotation: () => gsap.utils.random(-45, 45) // Start heavily rotated
+                    },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        scale: 1,
+                        rotation: () => gsap.utils.random(-6, 6), // End with a slight playful tilt
+                        duration: 0.8,
+                        ease: "back.out(2)",
+                        stagger: { amount: 0.3, from: "start" } // Stagger them naturally
+                    },
+                    startTime + 0.1
+                )
 
-                // Fade Out (except the last one which fades out with the container)
+                // 3. Scrub-safe subtle wiggle/float
+                tl.to(tags, {
+                    y: "-=12", // Drift slightly up
+                    rotation: () => gsap.utils.random(-12, 12), // Gentle wiggle
+                    duration: 1.5,
+                    ease: "sine.inOut"
+                }, startTime + 1.0)
+
+                // Fade Out: Pop them down and fade away cleanly
                 if (i < categories.length - 1) {
-                    tl.to(cat, { opacity: 0, x: -50, duration: 0.5, ease: "power2.in" }, startTime + 1)
+                    tl.to([catTitle, tags], {
+                        opacity: 0,
+                        y: 20,
+                        scale: 0.8,
+                        rotation: () => gsap.utils.random(-30, 30),
+                        duration: 0.4,
+                        stagger: 0.05,
+                        ease: "power2.in"
+                    }, startTime + 1.8)
                 }
             })
 
-            const afterSkillsTime = 1.5 + (categories.length * 1.5)
+            const afterSkillsTime = 1.5 + (categories.length * 2)
 
             // Fade out cursor before phase 2
             tl.to(cursorRef.current, { opacity: 0, duration: 0.5 }, afterSkillsTime - 0.5)
@@ -168,7 +222,13 @@ export const SkillsPage = () => {
             tl.to(proxy, { x: p2_x, y: p2_y, z: 0.5, rotX: 0.1, rotY: -Math.PI / 6, rotZ: -0.05, ease: "power2.out", duration: 0.8 }, afterSkillsTime + 0.7)
 
             // Fade out last skill category and entire skills container
-            tl.to(categories[categories.length - 1], { opacity: 0, x: -50, duration: 0.5 }, afterSkillsTime)
+            tl.to(categories[categories.length - 1].querySelectorAll(".cat-title, .skill-tag"), {
+                opacity: 0,
+                x: -100,
+                stagger: 0.05,
+                duration: 0.5,
+                ease: "power2.in"
+            }, afterSkillsTime)
             tl.to(skillsListRef.current, { opacity: 0, display: "none", duration: 0.5 }, afterSkillsTime + 0.5)
 
             // Fade in experience container
@@ -234,10 +294,10 @@ export const SkillsPage = () => {
                     )
                 }
 
-                // Fade In item with a slide up
+                // Fade In item with an energetic bouncy spring from below and slightly skewed
                 tl.fromTo(xp,
-                    { opacity: 0, y: 30 },
-                    { opacity: 1, y: 0, duration: 0.8, ease: "back.out(1.2)" },
+                    { opacity: 0, y: 60, scale: 0.8, rotation: 3 },
+                    { opacity: 1, y: 0, scale: 1, rotation: 0, duration: 1, ease: "elastic.out(1, 0.7)" },
                     xpTime
                 )
             })
@@ -267,10 +327,16 @@ export const SkillsPage = () => {
                 duration: 1.5
             }, statsTime)
 
-            // Show Stats
+            // Show Stats using a dynamic stagger bounce
+            const statsItems = gsap.utils.toArray(".stat-item")
             tl.fromTo(statsRef.current,
-                { opacity: 0, scale: 0.8 },
-                { opacity: 1, scale: 1, duration: 1, ease: "back.out(1.2)" }, statsTime + 1
+                { opacity: 0 },
+                { opacity: 1, duration: 0.1 }, statsTime + 1
+            )
+            tl.fromTo(statsItems,
+                { opacity: 0, scale: 0.3, y: 40, rotationY: 45 },
+                { opacity: 1, scale: 1, y: 0, rotationY: 0, duration: 0.8, stagger: 0.15, ease: "back.out(1.5)" },
+                statsTime + 1.1
             )
 
             // ── PHASE 4: Zoom Into Screen (Transition to next section) ──
@@ -279,9 +345,11 @@ export const SkillsPage = () => {
             // Fade out stats
             tl.to(statsRef.current, { opacity: 0, scale: 1.2, duration: 0.5 }, finalZoomTime)
 
-            // Extreme zoom into the screen
+            // Extreme zoom into the screen, spinning it wildly like being pulled into a portal
             tl.to(proxy, {
                 z: 15, // Zoom past the camera
+                rotZ: "+=" + (Math.PI * 2), // Full barrel roll
+                scale: 3,
                 ease: "expo.in",
                 duration: 1.5
             }, finalZoomTime + 0.2)
@@ -356,22 +424,41 @@ export const SkillsPage = () => {
                     className="absolute inset-0 w-full lg:w-1/2 lg:left-1/2 flex flex-col justify-end lg:justify-center px-4 md:px-12 lg:pr-24 lg:pl-12 opacity-0 pointer-events-auto pb-8 lg:pb-0"
                     style={{ display: 'none' }}
                 >
-                    <div className="relative w-full max-w-lg mx-auto lg:ml-0 h-[45vh] lg:h-[40vh]">
+                    {/* The container for the burst effect centering. 
+                        We use relative here, and all items inside are absolute so they burst FROM the center. */}
+                    <div className="relative w-full max-w-lg mx-auto lg:ml-0 h-[45vh] lg:h-[40vh] flex items-center justify-center">
                         {SKILL_CATEGORIES.map((cat, idx) => (
-                            <div key={idx} className="skill-category-item absolute top-1/2 left-0 -translate-y-1/2 w-full opacity-0">
-                                <h3 className="text-sm font-mono uppercase tracking-widest text-neutral-400 mb-4 flex items-center gap-3">
-                                    <span className="w-8 h-px bg-neutral-300" />
+                            <div key={idx} className="skill-category-item absolute inset-0 flex flex-col items-center justify-center opacity-0">
+                                {/* Category Title */}
+                                <h3 className="cat-title text-sm md:text-base font-mono uppercase tracking-widest font-bold text-neutral-900 mb-8 flex items-center gap-3">
+                                    <span className="w-8 h-[2px] bg-neutral-900" />
                                     {cat.title}
+                                    <span className="w-8 h-[2px] bg-neutral-900" />
                                 </h3>
-                                <div className="flex flex-wrap gap-2.5">
-                                    {cat.skills.map(skill => (
-                                        <span
-                                            key={skill}
-                                            className="px-3 py-1.5 md:px-5 md:py-2.5 text-xs md:text-base font-bold rounded-2xl bg-white border border-neutral-200 shadow-sm text-neutral-800 hover:scale-105 hover:border-neutral-400 transition-all cursor-default"
-                                        >
-                                            {skill}
-                                        </span>
-                                    ))}
+
+                                {/* Skill Tags (Flex layout to prevent messy overlapping, but animated dynamically) */}
+                                <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 max-w-sm md:max-w-md">
+                                    {cat.skills.map((skill, i) => {
+                                        // Playful, vibrant colors for the tags
+                                        const vColors = [
+                                            "bg-pink-100 border-pink-400 text-pink-900 shadow-pink-300",
+                                            "bg-emerald-100 border-emerald-400 text-emerald-900 shadow-emerald-300",
+                                            "bg-sky-100 border-sky-400 text-sky-900 shadow-sky-300",
+                                            "bg-purple-100 border-purple-400 text-purple-900 shadow-purple-300",
+                                            "bg-yellow-100 border-yellow-400 text-yellow-900 shadow-yellow-300",
+                                            "bg-orange-100 border-orange-400 text-orange-900 shadow-orange-300",
+                                        ];
+                                        const randomColor = vColors[i % vColors.length]; // Deterministic based on index
+
+                                        return (
+                                            <span
+                                                key={skill}
+                                                className={`skill-tag px-4 py-2 md:px-6 md:py-3 text-xs md:text-sm font-black uppercase tracking-wider rounded-xl border-2 shadow-[2px_2px_0_0] lg:shadow-[4px_4px_0_0] cursor-default ${randomColor}`}
+                                            >
+                                                {skill}
+                                            </span>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         ))}
