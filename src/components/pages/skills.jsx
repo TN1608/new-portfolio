@@ -67,6 +67,13 @@ export const SkillsPage = () => {
 
             const isMobile = window.innerWidth < 1024
 
+            // Set up SVG Timeline Path drawing
+            const xpPath = document.querySelector(".xp-timeline-path")
+            if (xpPath) {
+                const length = xpPath.getTotalLength()
+                gsap.set(xpPath, { strokeDasharray: length, strokeDashoffset: length })
+            }
+
             // Create main timeline
             const tl = gsap.timeline({
                 scrollTrigger: {
@@ -184,6 +191,18 @@ export const SkillsPage = () => {
 
             // Sequence through each experience item 
             const xpItems = gsap.utils.toArray(".xp-item")
+            const xpDots = gsap.utils.toArray(".xp-dot")
+            const xpPathAnim = xpPath ? xpPath.getTotalLength() : 0
+
+            // Base SVG line draw: gradually draw the whole line while items appear
+            if (xpPath) {
+                tl.to(xpPath, {
+                    strokeDashoffset: 0,
+                    duration: xpItems.length * 1.5,
+                    ease: "none"
+                }, xpStart + 0.5)
+            }
+
             xpItems.forEach((xp, i) => {
                 const xpTime = xpStart + 0.8 + (i * 1.5)
                 const clickTime = xpTime - 0.2
@@ -191,7 +210,7 @@ export const SkillsPage = () => {
                 // Lively Cursor click
                 tl.to(cursorRef.current, { scale: 0.8, rotate: -5, duration: 0.1, yoyo: true, repeat: 1 }, clickTime)
 
-                // Exploding sparks effect (Playful multicoloured particle burst)
+                // Exploding sparks effect
                 tl.fromTo(sparks,
                     { x: 0, y: 0, scale: 1, opacity: 1 },
                     {
@@ -206,10 +225,19 @@ export const SkillsPage = () => {
                     clickTime
                 )
 
-                // Fade In item
+                // The timeline dot pops in
+                if (xpDots[i]) {
+                    tl.fromTo(xpDots[i],
+                        { scale: 0, opacity: 0 },
+                        { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2)" },
+                        clickTime + 0.1
+                    )
+                }
+
+                // Fade In item with a slide up
                 tl.fromTo(xp,
-                    { opacity: 0, x: -50 },
-                    { opacity: 1, x: 0, duration: 0.8, ease: "back.out(1.2)" },
+                    { opacity: 0, y: 30 },
+                    { opacity: 1, y: 0, duration: 0.8, ease: "back.out(1.2)" },
                     xpTime
                 )
             })
@@ -356,32 +384,54 @@ export const SkillsPage = () => {
                     className="absolute inset-0 w-full lg:w-1/2 flex flex-col justify-end lg:justify-center px-4 md:px-12 lg:pl-24 lg:pr-12 opacity-0 pointer-events-auto pb-8 lg:pb-0"
                     style={{ display: 'none' }}
                 >
-                    <div className="space-y-6 lg:space-y-12 w-full max-w-lg mx-auto lg:mr-0 h-[50vh] lg:h-auto overflow-y-auto no-scrollbar pointer-events-auto">
-                        {EXPERIENCE.map((xp, idx) => (
-                            <div key={idx} className="xp-item relative pl-8 border-l-2 border-neutral-200 hover:border-neutral-900 transition-colors duration-500">
-                                {/* Timeline Dot */}
-                                <div className="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-neutral-100 border-2 border-neutral-900" />
+                    <div className="relative space-y-12 lg:space-y-16 w-full max-w-lg mx-auto lg:mr-0 h-[50vh] lg:h-auto overflow-y-auto no-scrollbar pointer-events-auto">
 
-                                <span className="text-xs font-mono font-bold text-neutral-500 mb-1 block">
-                                    {xp.period}
-                                </span>
-                                <h3 className="text-2xl md:text-4xl font-black text-neutral-900 tracking-tight leading-none mb-2">
-                                    {xp.company}
-                                </h3>
-                                <h4 className="text-lg md:text-xl font-bold text-neutral-500 mb-4">
-                                    {xp.role}
-                                </h4>
+                        {/* THE SVG TIMELINE LINE */}
+                        <svg
+                            className="absolute top-0 left-0 w-8 h-full -z-10 pointer-events-none"
+                            style={{ overflow: "visible" }}
+                        >
+                            {/* A fun curvy path routing through the items. */}
+                            <path
+                                className="xp-timeline-path"
+                                d="M 12,-20 V 50 C 12,80 32,90 32,120 C 32,150 12,160 12,190 V 260 C 12,290 32,300 32,330 C 32,360 12,370 12,400 V 600"
+                                fill="none"
+                                stroke="#d4d4d4"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
+                        </svg>
 
-                                <ul className="space-y-2">
-                                    {xp.highlights.map((hlt, i) => (
-                                        <li key={i} className="flex items-start gap-3 text-neutral-600 font-medium text-sm md:text-base">
-                                            <span className="text-neutral-300 mt-1 shrink-0">▸</span>
-                                            {hlt}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
+                        {EXPERIENCE.map((xp, idx) => {
+                            // Alternate left/right indentation to match the curvy path
+                            const isCurvedAlign = idx % 2 !== 0;
+                            return (
+                                <div key={idx} className={`xp-item relative transition-colors duration-500 ${isCurvedAlign ? "pl-14" : "pl-8"}`}>
+                                    {/* Timeline Dot */}
+                                    <div className={`xp-dot absolute top-1.5 w-4 h-4 rounded-full bg-neutral-100 border-2 border-neutral-900 opacity-0 ${isCurvedAlign ? "left-[24px]" : "left-[4px]"}`} />
+
+                                    <span className="text-xs font-mono font-bold text-neutral-500 mb-1 block">
+                                        {xp.period}
+                                    </span>
+                                    <h3 className="text-2xl md:text-4xl font-black text-neutral-900 tracking-tight leading-none mb-2">
+                                        {xp.company}
+                                    </h3>
+                                    <h4 className="text-lg md:text-xl font-bold text-neutral-500 mb-4">
+                                        {xp.role}
+                                    </h4>
+
+                                    <ul className="space-y-2">
+                                        {xp.highlights.map((hlt, i) => (
+                                            <li key={i} className="flex items-start gap-3 text-neutral-600 font-medium text-sm md:text-base">
+                                                <span className="text-neutral-300 mt-1 shrink-0">▸</span>
+                                                {hlt}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )
+                        })}
                     </div>
                 </div>
 
