@@ -1,9 +1,12 @@
 import { cn } from "@/lib/utils.js";
 
-export const AnimatedLink = ({ children, href, className }) => {
+export const AnimatedLink = ({ children, href, className, ...props }) => {
+    const isExternal = href?.startsWith("http")
     return (
         <a
             href={href}
+            {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+            {...props}
             className={cn(
                 className,
                 "group relative flex items-center",

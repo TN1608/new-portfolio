@@ -190,7 +190,9 @@ export const MobileNavbar = ({ links = [], onNavigate }) => {
                                 Get in touch
                             </p>
                             <a
-                                href="mailto:tuanngdinh.1608@gmail.com?subject=Collaboration%20Inquiry%20%E2%80%93%20From%20Your%20Portfolio&body=Hi%20Tuan%2C%0A%0AI%20came%20across%20your%20portfolio%20and%20was%20impressed%20by%20your%20work.%20I%E2%80%99d%20love%20to%20discuss%20a%20potential%20opportunity.%0A%0ABest%20regards%2C%0A%5BYour%20Name%5D"
+                                href="https://mail.google.com/mail/?view=cm&to=tuanngdinh.1608@gmail.com&su=Collaboration+Inquiry+%E2%80%93+From+Your+Portfolio&body=Hi+Tuan%2C%0A%0AI+came+across+your+portfolio+and+was+impressed+by+your+work.+I%E2%80%99d+love+to+discuss+a+potential+opportunity.%0A%0ABest+regards%2C%0A%5BYour+Name%5D"
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="text-sm text-white/60 hover:text-white transition-colors duration-300"
                             >
                                 tuanngdinh.1608@gmail.com

@@ -10,47 +10,50 @@ import { ArrowUpRight } from "lucide-react"
 
 gsap.registerPlugin(ScrollTrigger)
 
+const GMAIL_COMPOSE_URL = "https://mail.google.com/mail/?view=cm&to=tuanngdinh.1608@gmail.com&su=Collaboration+Inquiry+%E2%80%93+From+Your+Portfolio&body=Hi+Tuan%2C%0A%0AI+came+across+your+portfolio+and+was+impressed+by+your+work.+I%E2%80%99d+love+to+discuss+a+potential+opportunity.%0A%0ABest+regards%2C%0A%5BYour+Name%5D"
+
 export const ContactPage = () => {
     const sectionRef = useRef(null)
 
     useEffect(() => {
         const ctx = gsap.context(() => {
-            const els = document.querySelectorAll(".contact-animate")
+            const els = gsap.utils.toArray(".contact-animate")
+            const lines = gsap.utils.toArray(".contact-line-draw")
 
-            els.forEach((el, i) => {
-                gsap.fromTo(el, {
-                    y: 50,
-                    opacity: 0,
-                }, {
+            // Single timeline triggered by the section entering viewport
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: sectionRef.current,
+                    start: "top 75%",
+                    toggleActions: "play none none reverse",
+                }
+            })
+
+            // Stagger all contact elements
+            tl.fromTo(els,
+                { y: 40, opacity: 0 },
+                {
                     y: 0,
                     opacity: 1,
-                    duration: 0.9,
+                    duration: 0.8,
+                    stagger: 0.06,
                     ease: "power3.out",
-                    delay: i * 0.08,
-                    scrollTrigger: {
-                        trigger: el,
-                        start: "top 85%",
-                        toggleActions: "play none none reverse",
-                    }
-                })
-            })
+                },
+                0
+            )
 
-            // Horizontal line draw
-            const lines = document.querySelectorAll(".contact-line-draw")
-            lines.forEach((line) => {
-                gsap.fromTo(line, {
-                    scaleX: 0,
-                }, {
+            // Draw horizontal lines
+            tl.fromTo(lines,
+                { scaleX: 0 },
+                {
                     scaleX: 1,
                     duration: 1,
+                    stagger: 0.15,
                     ease: "power3.out",
-                    scrollTrigger: {
-                        trigger: line,
-                        start: "top 85%",
-                        toggleActions: "play none none reverse",
-                    }
-                })
-            })
+                },
+                0.2
+            )
+
         }, sectionRef)
 
         return () => ctx.revert()
@@ -108,7 +111,7 @@ export const ContactPage = () => {
                                 Say hello
                             </span>
                             <AnimatedLink
-                                href="mailto:tuanngdinh.1608@gmail.com?subject=Collaboration%20Inquiry%20%E2%80%93%20From%20Your%20Portfolio&body=Hi%20Tuan%2C%0A%0AI%20came%20across%20your%20portfolio%20and%20was%20impressed%20by%20your%20work.%20I%E2%80%99d%20love%20to%20discuss%20a%20potential%20opportunity.%0A%0ABest%20regards%2C%0A%5BYour%20Name%5D"
+                                href={GMAIL_COMPOSE_URL}
                                 className="text-2xl sm:text-3xl md:text-4xl font-bold text-neutral-300 tracking-tight py-2"
                             >
                                 tuanngdinh.1608
