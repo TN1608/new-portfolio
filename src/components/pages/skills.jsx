@@ -52,6 +52,7 @@ export const SkillsPage = () => {
     const skillsListRef = useRef(null)
     const xpListRef = useRef(null)
     const statsRef = useRef(null)
+    const cursorRef = useRef(null)
 
     useEffect(() => {
         const ctx = gsap.context(() => {
@@ -69,7 +70,7 @@ export const SkillsPage = () => {
                 scrollTrigger: {
                     trigger: sectionRef.current,
                     start: "top top",
-                    end: "+=600%", // Longer scroll for sequential reading
+                    end: "+=800%", // Longer scroll for sequential reading (expanded for manual xp loop)
                     scrub: 1,
                     pin: true,
                     anticipatePin: 1
@@ -83,10 +84,44 @@ export const SkillsPage = () => {
             // Show Skills container
             tl.to(skillsListRef.current, { opacity: 1, display: "flex", duration: 0.1 }, 0.9)
 
+            const sparks = cursorRef.current.querySelectorAll(".spark")
+            const arrowImg = cursorRef.current.querySelector(".cursor-arrow")
+            const handImg = cursorRef.current.querySelector(".cursor-hand")
+
+            // Cursor moves to phone (left area) with a confident swoop
+            tl.fromTo(cursorRef.current,
+                { opacity: 0, x: "50vw", y: "80vh", scale: 1, rotate: 20 },
+                { opacity: 1, x: "25vw", y: "55vh", rotate: 0, duration: 1, ease: "power2.out" },
+                0.5
+            )
+
+            // Switch to hand cursor right before the first click
+            tl.set(arrowImg, { opacity: 0 }, 1.4)
+            tl.set(handImg, { opacity: 1 }, 1.4)
+
             // Sequence through each skill category (fade in, hold, fade out)
             const categories = gsap.utils.toArray(".skill-category-item")
             categories.forEach((cat, i) => {
-                const startTime = 1 + (i * 1.5)
+                const startTime = 1.5 + (i * 1.5)
+                const clickTime = startTime - 0.2
+
+                // Lively Cursor click: scale down and bounce back
+                tl.to(cursorRef.current, { scale: 0.8, rotate: -5, duration: 0.1, yoyo: true, repeat: 1 }, clickTime)
+
+                // Exploding sparks effect (Playful multicoloured particle burst)
+                tl.fromTo(sparks,
+                    { x: 0, y: 0, scale: 1, opacity: 1 },
+                    {
+                        x: (index) => Math.cos(index * (Math.PI * 2) / 6) * 45,
+                        y: (index) => Math.sin(index * (Math.PI * 2) / 6) * 45,
+                        scale: 0,
+                        opacity: 0,
+                        duration: 0.5,
+                        ease: "expo.out",
+                        stagger: 0
+                    },
+                    clickTime
+                )
 
                 // Fade In
                 tl.fromTo(cat,
@@ -104,7 +139,13 @@ export const SkillsPage = () => {
                 }
             })
 
-            const afterSkillsTime = 1 + (categories.length * 1.5)
+            const afterSkillsTime = 1.5 + (categories.length * 1.5)
+
+            // Fade out cursor before phase 2
+            tl.to(cursorRef.current, { opacity: 0, duration: 0.5 }, afterSkillsTime - 0.5)
+            // Reset back to arrow cursor for its travel phase
+            tl.set(arrowImg, { opacity: 1 }, afterSkillsTime)
+            tl.set(handImg, { opacity: 0 }, afterSkillsTime)
 
             // ── PHASE 2: Move Phone Right, Extreme Camera Swivel ──
             // Phone pushes back slightly (z: -1), does a large swivel, then lands on the right
@@ -120,13 +161,55 @@ export const SkillsPage = () => {
                 { opacity: 0, x: -100, display: "none" },
                 { opacity: 1, x: 0, display: "flex", ease: "power2.out", duration: 0.8 }, afterSkillsTime + 0.5
             )
-            // Stagger experience items
-            tl.fromTo(".xp-item",
-                { opacity: 0, x: -50 },
-                { opacity: 1, x: 0, stagger: 0.4, duration: 0.8, ease: "back.out(1.2)" }, afterSkillsTime + 1
+
+            // Move cursor to right side for experience clicking
+            const xpStart = afterSkillsTime + 1
+            tl.fromTo(cursorRef.current,
+                { opacity: 0, x: "50vw", y: "80vh", scale: 1 },
+                { opacity: 1, x: "75vw", y: "55vh", duration: 0.8, ease: "power2.out" },
+                xpStart
             )
 
-            const holdXpTime = afterSkillsTime + 2.5
+            // Switch to hand cursor right before clicking sequences begin
+            tl.set(arrowImg, { opacity: 0 }, xpStart + 0.8)
+            tl.set(handImg, { opacity: 1 }, xpStart + 0.8)
+
+            // Sequence through each experience item 
+            const xpItems = gsap.utils.toArray(".xp-item")
+            xpItems.forEach((xp, i) => {
+                const xpTime = xpStart + 0.8 + (i * 1.5)
+                const clickTime = xpTime - 0.2
+
+                // Lively Cursor click
+                tl.to(cursorRef.current, { scale: 0.8, rotate: -5, duration: 0.1, yoyo: true, repeat: 1 }, clickTime)
+
+                // Exploding sparks effect (Playful multicoloured particle burst)
+                tl.fromTo(sparks,
+                    { x: 0, y: 0, scale: 1, opacity: 1 },
+                    {
+                        x: (index) => Math.cos(index * (Math.PI * 2) / 6) * 45,
+                        y: (index) => Math.sin(index * (Math.PI * 2) / 6) * 45,
+                        scale: 0,
+                        opacity: 0,
+                        duration: 0.5,
+                        ease: "expo.out",
+                        stagger: 0
+                    },
+                    clickTime
+                )
+
+                // Fade In item
+                tl.fromTo(xp,
+                    { opacity: 0, x: -50 },
+                    { opacity: 1, x: 0, duration: 0.8, ease: "back.out(1.2)" },
+                    xpTime
+                )
+            })
+
+            const holdXpTime = xpStart + 0.8 + (xpItems.length * 1.5)
+
+            // Fade out cursor
+            tl.to(cursorRef.current, { opacity: 0, duration: 0.5 }, holdXpTime - 0.5)
             tl.to({}, { duration: 1 }) // Hold XP on screen
 
             // ── PHASE 3: Rotate Landscape & Center for Stats ──
@@ -193,6 +276,23 @@ export const SkillsPage = () => {
 
             {/* HTML OVERLAY CONENT */}
             <div ref={containerRef} className="absolute inset-0 z-20 w-full h-full pointer-events-none flex items-center justify-center">
+
+                {/* ── IMAGE CURSORS & SPARKS ── */}
+                <div ref={cursorRef} className="absolute top-0 left-0 z-50 pointer-events-none w-10 h-10 opacity-0 transform-origin-top-left -ml-2 -mt-2">
+                    {/* Multicolored Click Sparks Effect */}
+                    <div className="cursor-sparks absolute top-0 left-0 w-full h-full origin-center">
+                        <div className="spark absolute w-1.5 h-1.5 bg-yellow-400 rounded-full top-2 left-2 opacity-0" />
+                        <div className="spark absolute w-1.5 h-1.5 bg-sky-400 rounded-full top-2 left-2 opacity-0" />
+                        <div className="spark absolute w-1.5 h-1.5 bg-pink-400 rounded-full top-2 left-2 opacity-0" />
+                        <div className="spark absolute w-1.5 h-1.5 bg-emerald-400 rounded-full top-2 left-2 opacity-0" />
+                        <div className="spark absolute w-1.5 h-1.5 bg-purple-400 rounded-full top-2 left-2 opacity-0" />
+                        <div className="spark absolute w-1.5 h-1.5 bg-orange-400 rounded-full top-2 left-2 opacity-0" />
+                    </div>
+
+                    {/* PNG Assets */}
+                    <img src="/img/cursor.png" className="cursor-arrow absolute top-0 left-0 w-8 h-8 object-contain drop-shadow-md z-10" alt="cursor" />
+                    <img src="/img/cursor_hand.png" className="cursor-hand absolute top-0 left-0 w-8 h-8 object-contain drop-shadow-md z-20 opacity-0" alt="cursor hover" />
+                </div>
 
                 {/* ── HERO TITLE ── */}
                 <div ref={titleRef} className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 w-full h-full">
