@@ -2,19 +2,23 @@
 
 import { useEffect, useRef, useState } from "react"
 import { gsap } from "gsap"
+import { TextRoll } from "@/components/ui/text-roll"
 
-export const MobileNavbar = ({ links = [], onNavigate }) => {
+export const MobileNavbar = ({ links = [], onNavigate, hidden = false }) => {
     const [isOpen, setIsOpen] = useState(false)
     const overlayRef = useRef(null)
     const menuRef = useRef(null)
     const itemsRef = useRef([])
     const lineRefs = useRef([])
     const footerRef = useRef(null)
+    const tlRef = useRef(null)
 
+    // ── GSAP OPEN/CLOSE TIMELINE ──
     useEffect(() => {
         if (!overlayRef.current || !menuRef.current) return
 
         const tl = gsap.timeline({ paused: true })
+        tlRef.current = tl
 
         // 1. Overlay fade in
         tl.fromTo(overlayRef.current,
@@ -30,21 +34,13 @@ export const MobileNavbar = ({ links = [], onNavigate }) => {
             0.1
         )
 
-        // 3. Stagger nav items with word reveal
+        // 3. Stagger nav items
         itemsRef.current.forEach((item, i) => {
             if (!item) return
-            const chars = item.querySelectorAll(".mobile-nav-char")
-            tl.fromTo(chars,
-                { y: "120%", opacity: 0, rotateX: -60 },
-                {
-                    y: "0%",
-                    opacity: 1,
-                    rotateX: 0,
-                    duration: 0.5,
-                    stagger: 0.02,
-                    ease: "power4.out"
-                },
-                0.3 + i * 0.06
+            tl.fromTo(item,
+                { y: 30, opacity: 0 },
+                { y: 0, opacity: 1, duration: 0.5, ease: "power4.out" },
+                0.3 + i * 0.08
             )
         })
 
@@ -67,24 +63,30 @@ export const MobileNavbar = ({ links = [], onNavigate }) => {
             )
         }
 
-        // Store timeline reference for play/reverse
-        overlayRef.current._tl = tl
-
         return () => tl.kill()
     }, [])
 
+    // ── LOCK BODY + HTML SCROLL ──
     useEffect(() => {
-        const tl = overlayRef.current?._tl
+        const tl = tlRef.current
         if (!tl) return
 
         if (isOpen) {
+            // Lock BOTH html and body to prevent iOS Safari scroll-through
+            document.documentElement.style.overflow = "hidden"
             document.body.style.overflow = "hidden"
+            document.body.style.position = "fixed"
+            document.body.style.inset = "0"
+            document.body.style.width = "100%"
             tl.play()
         } else {
             tl.reverse()
-            // Delay restoring overflow until animation completes
             setTimeout(() => {
+                document.documentElement.style.overflow = ""
                 document.body.style.overflow = ""
+                document.body.style.position = ""
+                document.body.style.inset = ""
+                document.body.style.width = ""
             }, 600)
         }
     }, [isOpen])
@@ -100,54 +102,61 @@ export const MobileNavbar = ({ links = [], onNavigate }) => {
         }, 500)
     }
 
-    const splitChars = (text) => {
-        return text.split("").map((char, i) => (
-            <span
-                key={i}
-                className="mobile-nav-char inline-block"
-                style={{ perspective: "600px", willChange: "transform" }}
-            >
-                {char === " " ? "\u00A0" : char}
-            </span>
-        ))
-    }
+
 
     return (
         <div className="md:hidden">
             {/* ── HAMBURGER BUTTON ── */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="relative z-110 w-10 h-10 flex flex-col items-center justify-center gap-[5px] group"
+                className={`relative z-200 w-10 h-10 flex flex-col items-center justify-center gap-[5px] group transition-opacity duration-300 ${hidden && !isOpen ? "pointer-events-none opacity-0" : "opacity-100"}`}
                 aria-label="Toggle menu"
             >
-                <span className={`w-6 h-[1.5px] bg-white/70 transition-all duration-300 ease-in-out ${isOpen ? "rotate-45 translate-y-[3.25px]" : "group-hover:w-5"
+                <span className={`w-6 h-[1.5px] bg-white/70 transition-all duration-300 ease-in-out origin-center ${isOpen ? "rotate-45 translate-y-[3.25px]" : "group-hover:w-5"
                     }`} />
-                <span className={`w-6 h-[1.5px] bg-white/70 transition-all duration-300 ease-in-out ${isOpen ? "-rotate-45 -translate-y-[3.25px]" : "group-hover:w-4"
+                <span className={`w-6 h-[1.5px] bg-white/70 transition-all duration-300 ease-in-out origin-center ${isOpen ? "-rotate-45 -translate-y-[3.25px]" : "group-hover:w-4"
                     }`} />
             </button>
 
             {/* ── FULLSCREEN OVERLAY ── */}
             <div
                 ref={overlayRef}
-                className="fixed inset-0 z-105 bg-black/40 backdrop-blur-sm invisible opacity-0"
+                className="fixed inset-0 z-190 bg-black/60 backdrop-blur-md invisible opacity-0"
                 onClick={() => setIsOpen(false)}
             />
 
-            {/* ── SLIDE-IN MENU PANEL ── */}
+            {/* ── FULLSCREEN MENU PANEL ── */}
             <div
                 ref={menuRef}
-                className="fixed top-0 right-0 z-106 w-full sm:w-[380px] h-full bg-neutral-950 border-l border-white/5 flex flex-col translate-x-full"
-                onClick={(e) => e.stopPropagation()}
+                className="fixed z-195 flex flex-col overflow-hidden"
+                style={{
+                    transform: "translateX(100%)",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    width: "100vw",
+                    height: "100vh",
+                    /* extend beyond viewport to cover any safe-area or rubber-band gaps */
+                    minHeight: "100vh",
+                    minHeight: "-webkit-fill-available",
+                    background: "#0a0a0a",
+                    overscrollBehavior: "none",
+                    touchAction: "none",
+                }}
             >
-                {/* Close area top */}
-                <div className="flex items-center justify-between px-8 h-16">
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 pt-5 pb-2 shrink-0">
                     <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30">
                         Navigation
+                    </span>
+                    <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/20">
+                        Menu
                     </span>
                 </div>
 
                 {/* Nav links */}
-                <div className="flex-1 flex flex-col justify-center px-8">
+                <div className="flex-1 flex flex-col justify-center px-6 py-4">
                     {links.map((link, i) => (
                         <div key={link.label}>
                             <a
@@ -157,17 +166,22 @@ export const MobileNavbar = ({ links = [], onNavigate }) => {
                                     e.preventDefault()
                                     handleClick(e, link.href)
                                 }}
-                                className="group block py-5 overflow-hidden"
+                                className="group block py-4 overflow-hidden"
                             >
-                                <div className="flex items-baseline gap-4">
+                                <div className="flex items-baseline gap-3">
                                     {/* Index Number */}
                                     <span className="text-[11px] font-mono text-white/20 tabular-nums">
                                         {String(i + 1).padStart(2, "0")}
                                     </span>
-                                    {/* Label */}
-                                    <span className="text-4xl sm:text-5xl font-black text-white/80 tracking-tight leading-none group-hover:text-white transition-colors duration-300 inline-flex">
-                                        {splitChars(link.label)}
-                                    </span>
+
+                                    {/* ── AWWWARDS TEXT ROLL ── */}
+                                    <TextRoll
+                                        text={link.label}
+                                        className="text-3xl sm:text-4xl font-black text-white/80 tracking-tight leading-none"
+                                        hoverClassName="text-3xl sm:text-4xl font-black text-white tracking-tight leading-none"
+                                        charSplit={true}
+                                        staggerMs={15}
+                                    />
                                 </div>
                             </a>
                             {/* Divider */}
@@ -182,9 +196,9 @@ export const MobileNavbar = ({ links = [], onNavigate }) => {
                 </div>
 
                 {/* Footer info */}
-                <div ref={footerRef} className="px-8 pb-10 opacity-0">
-                    <div className="h-px bg-white/8 mb-6" />
-                    <div className="flex items-center justify-between">
+                <div ref={footerRef} className="px-6 pb-8 shrink-0 opacity-0">
+                    <div className="h-px bg-white/8 mb-5" />
+                    <div className="flex flex-col gap-3">
                         <div>
                             <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30 mb-1">
                                 Get in touch
@@ -206,6 +220,9 @@ export const MobileNavbar = ({ links = [], onNavigate }) => {
                         </div>
                     </div>
                 </div>
+
+                {/* Extra safety: absolutely positioned background that extends past the viewport */}
+                <div className="absolute inset-0 -z-10 pointer-events-none" style={{ background: "#0a0a0a", top: "-50px", bottom: "-100px", left: "-10px", right: "-10px" }} />
             </div>
         </div>
     )

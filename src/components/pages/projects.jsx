@@ -307,14 +307,14 @@ export const ProjectsPage = () => {
                 {/* ─── LIST VIEW ─── */}
                 <div
                     ref={listViewRef}
-                    className="absolute inset-0 flex flex-col lg:flex-row items-center container mx-auto px-6 md:px-16 z-10 pointer-events-none"
+                    className="absolute inset-0 flex flex-col lg:flex-row items-stretch container mx-auto px-4 md:px-16 z-10 pointer-events-none"
                 >
                     {/* Left: Preview + Quick Info (recruiter-friendly) */}
-                    <div className="w-full lg:w-[55%] flex flex-col justify-center h-full gap-5 pt-12 lg:pt-0 pointer-events-none relative">
+                    <div className="w-full lg:w-[55%] flex flex-col justify-end lg:justify-center h-full pointer-events-none relative">
                         {/* 3D Monitor occupies this space visually */}
 
                         {/* Quick Identity: Title + Tagline pinned to the bottom left so it doesn't overlap the monitor */}
-                        <div className="absolute bottom-10 lg:bottom-16 left-0 max-w-[500px] pointer-events-auto backdrop-blur-md bg-white/40 p-6 rounded-2xl shadow-sm border border-white/50">
+                        <div className="relative lg:absolute bottom-0 lg:bottom-16 left-0 right-0 lg:right-auto lg:max-w-[500px] pointer-events-auto backdrop-blur-md bg-white/40 p-4 lg:p-6 rounded-t-2xl lg:rounded-2xl shadow-sm border border-white/50 mb-0 lg:mb-0">
                             <h3 className="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight mb-1">
                                 {currentProject?.title}
                             </h3>
@@ -353,11 +353,11 @@ export const ProjectsPage = () => {
                     </div>
 
                     {/* Right: Project Names */}
-                    <div className="w-full lg:w-[45%] flex flex-col items-start lg:items-end justify-center h-full pb-12 lg:pb-0 pointer-events-auto">
-                        <span className="text-xs font-mono uppercase tracking-[0.3em] text-neutral-400 mb-6 flex items-center gap-3">
+                    <div className="w-full lg:w-[45%] absolute top-16 right-4 lg:relative lg:top-auto lg:right-auto flex flex-col items-end lg:items-end justify-start lg:justify-center lg:h-full pointer-events-auto z-20">
+                        <span className="text-xs font-mono uppercase tracking-[0.3em] text-neutral-400 mb-3 lg:mb-6 flex items-center gap-3">
                             My Projects <span className="w-10 h-px bg-neutral-300 inline-block" />
                         </span>
-                        <div className="flex flex-col items-start lg:items-end gap-1">
+                        <div className="flex flex-col items-end gap-0.5 lg:gap-1">
                             {PROJECTS.map((project, i) => {
                                 const isActive = i === activeIndex
                                 return (
@@ -365,9 +365,9 @@ export const ProjectsPage = () => {
                                         key={project.title}
                                         onMouseEnter={() => handleHover(i)}
                                         onClick={() => openDetail(project)}
-                                        className="py-1.5 cursor-pointer text-left lg:text-right group"
+                                        className="py-1 cursor-pointer text-right group"
                                     >
-                                        <span className={`text-xl sm:text-2xl md:text-3xl lg:text-4xl tracking-tight transition-all duration-300 block ${isActive
+                                        <span className={`text-lg sm:text-xl md:text-2xl lg:text-4xl tracking-tight transition-all duration-300 block ${isActive
                                             ? "text-neutral-900 font-bold"
                                             : "text-neutral-400 group-hover:text-neutral-600 font-light"
                                             }`}>

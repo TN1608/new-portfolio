@@ -63,7 +63,9 @@ export const SkillsPage = () => {
             proxy.rotY = 0
             proxy.rotZ = 0
             proxy.screenOpacity = 0
-            proxy.scale = 2.2
+            proxy.scale = window.innerWidth < 768 ? 1.8 : 2.2
+
+            const isMobile = window.innerWidth < 1024
 
             // Create main timeline
             const tl = gsap.timeline({
@@ -77,8 +79,11 @@ export const SkillsPage = () => {
                 }
             })
 
-            // ── PHASE 1: Move Phone Left, Title out, Rotate slightly ──
-            tl.to(proxy, { x: -2.5, z: 0.5, rotX: 0.15, rotY: Math.PI / 6, rotZ: 0.05, screenOpacity: 1, ease: "power2.inOut", duration: 1.2 }, 0)
+            // ── PHASE 1: Move Phone, Title out, Rotate slightly ──
+            // On desktop: phone moves left. On mobile: phone moves up.
+            const p1_x = isMobile ? 0 : -2.5
+            const p1_y = isMobile ? 2.5 : -0.5
+            tl.to(proxy, { x: p1_x, y: p1_y, z: 0.5, rotX: 0.15, rotY: Math.PI / 6, rotZ: 0.05, screenOpacity: 1, ease: "power2.inOut", duration: 1.2 }, 0)
             tl.to(titleRef.current, { opacity: 0, scale: 0.8, duration: 1 }, 0)
 
             // Show Skills container
@@ -88,10 +93,10 @@ export const SkillsPage = () => {
             const arrowImg = cursorRef.current.querySelector(".cursor-arrow")
             const handImg = cursorRef.current.querySelector(".cursor-hand")
 
-            // Cursor moves to phone (left area) with a confident swoop
+            // Cursor moves to phone area
             tl.fromTo(cursorRef.current,
                 { opacity: 0, x: "50vw", y: "80vh", scale: 1, rotate: 20 },
-                { opacity: 1, x: "25vw", y: "55vh", rotate: 0, duration: 1, ease: "power2.out" },
+                { opacity: 1, x: isMobile ? "50vw" : "25vw", y: isMobile ? "20vh" : "55vh", rotate: 0, duration: 1, ease: "power2.out" },
                 0.5
             )
 
@@ -147,10 +152,13 @@ export const SkillsPage = () => {
             tl.set(arrowImg, { opacity: 1 }, afterSkillsTime)
             tl.set(handImg, { opacity: 0 }, afterSkillsTime)
 
-            // ── PHASE 2: Move Phone Right, Extreme Camera Swivel ──
-            // Phone pushes back slightly (z: -1), does a large swivel, then lands on the right
-            tl.to(proxy, { x: 0, z: -1, rotY: Math.PI, ease: "power1.inOut", duration: 0.7 }, afterSkillsTime)
-            tl.to(proxy, { x: 2.2, z: 0.5, rotX: 0.1, rotY: -Math.PI / 6, rotZ: -0.05, ease: "power2.out", duration: 0.8 }, afterSkillsTime + 0.7)
+            // ── PHASE 2: Move Phone, Extreme Camera Swivel ──
+            // On desktop: phone lands on the right. On mobile: stays top but swivels.
+            const p2_x = isMobile ? 0 : 2.2
+            const p2_y = isMobile ? 2.5 : -0.5
+            // Phone pushes back slightly (z: -1), does a large swivel
+            tl.to(proxy, { x: 0, y: isMobile ? 3 : 0, z: -1, rotY: Math.PI, ease: "power1.inOut", duration: 0.7 }, afterSkillsTime)
+            tl.to(proxy, { x: p2_x, y: p2_y, z: 0.5, rotX: 0.1, rotY: -Math.PI / 6, rotZ: -0.05, ease: "power2.out", duration: 0.8 }, afterSkillsTime + 0.7)
 
             // Fade out last skill category and entire skills container
             tl.to(categories[categories.length - 1], { opacity: 0, x: -50, duration: 0.5 }, afterSkillsTime)
@@ -162,11 +170,11 @@ export const SkillsPage = () => {
                 { opacity: 1, x: 0, display: "flex", ease: "power2.out", duration: 0.8 }, afterSkillsTime + 0.5
             )
 
-            // Move cursor to right side for experience clicking
+            // Move cursor to phone area for experience clicking
             const xpStart = afterSkillsTime + 1
             tl.fromTo(cursorRef.current,
                 { opacity: 0, x: "50vw", y: "80vh", scale: 1 },
-                { opacity: 1, x: "75vw", y: "55vh", duration: 0.8, ease: "power2.out" },
+                { opacity: 1, x: isMobile ? "50vw" : "75vw", y: isMobile ? "20vh" : "55vh", duration: 0.8, ease: "power2.out" },
                 xpStart
             )
 
@@ -221,11 +229,12 @@ export const SkillsPage = () => {
             // Phone turns horizontal (landscape) and zooms in a bit
             tl.to(proxy, {
                 x: 0,
-                y: 0,
-                z: 3,
+                y: isMobile ? 1 : 0,
+                z: isMobile ? 1 : 3,
                 rotX: 0,
                 rotY: 0,
                 rotZ: -Math.PI / 2, // Rotate exactly 90 degrees
+                scale: isMobile ? 1.5 : 2.2,
                 ease: "power3.inOut",
                 duration: 1.5
             }, statsTime)
@@ -313,13 +322,13 @@ export const SkillsPage = () => {
                     </div>
                 </div>
 
-                {/* ── SKILLS LIST (RIGHT SIDE) ── */}
+                {/* ── SKILLS LIST ── */}
                 <div
                     ref={skillsListRef}
-                    className="absolute right-0 w-full lg:w-1/2 h-full flex flex-col justify-center px-6 lg:pr-24 pl-6 lg:pl-12 opacity-0 pointer-events-auto"
+                    className="absolute inset-0 w-full lg:w-1/2 lg:left-1/2 flex flex-col justify-end lg:justify-center px-4 md:px-12 lg:pr-24 lg:pl-12 opacity-0 pointer-events-auto pb-8 lg:pb-0"
                     style={{ display: 'none' }}
                 >
-                    <div className="relative w-full max-w-lg mx-auto lg:ml-0 h-[40vh]">
+                    <div className="relative w-full max-w-lg mx-auto lg:ml-0 h-[45vh] lg:h-[40vh]">
                         {SKILL_CATEGORIES.map((cat, idx) => (
                             <div key={idx} className="skill-category-item absolute top-1/2 left-0 -translate-y-1/2 w-full opacity-0">
                                 <h3 className="text-sm font-mono uppercase tracking-widest text-neutral-400 mb-4 flex items-center gap-3">
@@ -330,7 +339,7 @@ export const SkillsPage = () => {
                                     {cat.skills.map(skill => (
                                         <span
                                             key={skill}
-                                            className="px-4 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold rounded-2xl bg-white border border-neutral-200 shadow-sm text-neutral-800 hover:scale-105 hover:border-neutral-400 transition-all cursor-default"
+                                            className="px-3 py-1.5 md:px-5 md:py-2.5 text-xs md:text-base font-bold rounded-2xl bg-white border border-neutral-200 shadow-sm text-neutral-800 hover:scale-105 hover:border-neutral-400 transition-all cursor-default"
                                         >
                                             {skill}
                                         </span>
@@ -341,13 +350,13 @@ export const SkillsPage = () => {
                     </div>
                 </div>
 
-                {/* ── EXPERIENCE LIST (LEFT SIDE) ── */}
+                {/* ── EXPERIENCE LIST ── */}
                 <div
                     ref={xpListRef}
-                    className="absolute left-0 w-full lg:w-1/2 h-full flex flex-col justify-center px-6 lg:pl-24 pr-6 lg:pr-12 gap-8 opacity-0 pointer-events-auto"
+                    className="absolute inset-0 w-full lg:w-1/2 flex flex-col justify-end lg:justify-center px-4 md:px-12 lg:pl-24 lg:pr-12 opacity-0 pointer-events-auto pb-8 lg:pb-0"
                     style={{ display: 'none' }}
                 >
-                    <div className="space-y-12 w-full max-w-lg mx-auto lg:mr-0">
+                    <div className="space-y-6 lg:space-y-12 w-full max-w-lg mx-auto lg:mr-0 h-[50vh] lg:h-auto overflow-y-auto no-scrollbar pointer-events-auto">
                         {EXPERIENCE.map((xp, idx) => (
                             <div key={idx} className="xp-item relative pl-8 border-l-2 border-neutral-200 hover:border-neutral-900 transition-colors duration-500">
                                 {/* Timeline Dot */}
@@ -356,7 +365,7 @@ export const SkillsPage = () => {
                                 <span className="text-xs font-mono font-bold text-neutral-500 mb-1 block">
                                     {xp.period}
                                 </span>
-                                <h3 className="text-3xl md:text-4xl font-black text-neutral-900 tracking-tight leading-none mb-2">
+                                <h3 className="text-2xl md:text-4xl font-black text-neutral-900 tracking-tight leading-none mb-2">
                                     {xp.company}
                                 </h3>
                                 <h4 className="text-lg md:text-xl font-bold text-neutral-500 mb-4">
@@ -376,13 +385,13 @@ export const SkillsPage = () => {
                     </div>
                 </div>
 
-                {/* ── STATS ROW (CENTERED, FOR LANDSCAPE PHONE) ── */}
+                {/* ── STATS ROW ── */}
                 <div
                     ref={statsRef}
-                    className="absolute inset-0 flex items-center justify-center opacity-0 pointer-events-auto"
+                    className="absolute inset-0 flex items-end lg:items-center justify-center opacity-0 pointer-events-auto pb-12 lg:pb-0"
                 >
                     {/* Shifted and rotated to match the phone's natural 3D perspective resting angle */}
-                    <div className="w-full max-w-5xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 relative z-50 -translate-x-8 -translate-y-2 md:-translate-x-12 md:-translate-y-4 rotate-[14deg] scale-[0.9]">
+                    <div className="w-full max-w-5xl mx-auto px-4 lg:px-6 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 relative z-50 lg:-translate-x-12 lg:-translate-y-4 lg:rotate-[14deg] lg:scale-[0.9]">
                         {SKILLS_STATS.map((stat, i) => {
                             let content;
 

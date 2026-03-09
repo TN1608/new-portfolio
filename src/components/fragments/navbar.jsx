@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { AnimatedLink } from "@/components/ui/animated-link"
+import { TextRoll } from "@/components/ui/text-roll"
 import { MobileNavbar } from "@/components/fragments/mobile-navbar"
 
 gsap.registerPlugin(ScrollTrigger)
@@ -151,9 +152,13 @@ export const Navbar = () => {
                                 onClick={(e) => handleNavClick(e, link.href)}
                                 className="relative px-4 py-2 text-[13px] font-medium text-white/60 tracking-wide uppercase overflow-hidden group hover:text-white transition-colors duration-300"
                             >
-                                <span className="inline-flex">
-                                    {splitChars(link.label)}
-                                </span>
+                                <TextRoll
+                                    text={link.label}
+                                    className="text-[13px] font-medium text-white/60 tracking-wide uppercase"
+                                    hoverClassName="text-[13px] font-medium text-white tracking-wide uppercase"
+                                    charSplit={false}
+                                    staggerMs={30}
+                                />
                                 {/* Hover underline */}
                                 <span className="absolute bottom-1 left-4 right-4 h-px bg-white/40 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-in-out" />
                             </a>
@@ -173,7 +178,7 @@ export const Navbar = () => {
                     </div>
 
                     {/* ── MOBILE HAMBURGER ── */}
-                    <MobileNavbar links={NAV_LINKS} onNavigate={handleNavClick} />
+                    <MobileNavbar links={NAV_LINKS} onNavigate={handleNavClick} hidden={hidden} />
                 </div>
 
                 {/* ── BOTTOM LINE ── */}
