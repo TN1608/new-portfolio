@@ -15,14 +15,15 @@ import * as THREE from 'three'
 export function Model({ image, ...props }) {
   const { nodes, materials } = useGLTF('/models/c64_monitor-transformed.glb')
 
+  if (typeof window !== 'undefined') {
+    window.monitorGeom = nodes.Mesh_Default_0.geometry;
+    window.THREE = THREE;
+  }
+
   // Using a solid color if no image is provided so it looks like an active CRT
   const texture = useTexture(image || '/img/placeholder.jpg', (tex) => {
-    // The default orientation for planes in THREE might require flipY adjustment depending on the texture
-    tex.flipY = false;
-
-    // Rotate the texture 90 degrees if it's appearing sideways on the plane
-    tex.center.set(0.5, 0.5);
-    tex.rotation = -Math.PI / 2;
+    // Drei's useTexture defaults to true, but we explicitly make sure it flips right-side up
+    tex.flipY = true;
   })
 
   // We need to carefully position the plane over the monitor screen
@@ -34,10 +35,14 @@ export function Model({ image, ...props }) {
 
       {/* Screen texture overlay */}
       <mesh
-        // Positioned slightly forward and up to sit on the CRT glass
-        position={[0, 2.5, 2.6]}
-        rotation={[-0.05, 0, 0]}
-        scale={[3.2, 2.3, 1]}
+        // Readjusted Mathematics from screenshot feedback:
+        // Y was too low (on the grill), shifting up by ~13 units to hit the screen area centering at 31.5.
+        // Z at 65.5 to sit flush against the glass.
+        // Rotation X angled backward (-0.15) to match the tilt of the CRT glass.
+        // Scale narrowed significantly to ensure the edges don't clip through the plastic sides.
+        position={[0, 21, 65.5]}
+        rotation={[-0.15, 0, 0]}
+        scale={[29, 21.5, 1]}
       >
         <planeGeometry args={[1, 1]} />
         <meshBasicMaterial

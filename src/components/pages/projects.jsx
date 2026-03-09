@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "../ui/separator"
 import { Canvas, useThree } from "@react-three/fiber"
 import { Environment, ContactShadows, OrbitControls } from "@react-three/drei"
-import { Model as C64Monitor } from "@/assets/3d/C64_monitor.jsx"
+import { Model as CrtMonitor } from "@/assets/3d/Crt_monitor.jsx"
 import { Suspense } from "react"
 
 gsap.registerPlugin(ScrollTrigger)
@@ -23,46 +23,46 @@ const MonitorScene = ({ isDetailActive, project }) => {
 
         if (isDetailActive) {
             // Zoom in: bring the monitor to the center and very close to the camera
-            // Camera is at z: 15. Since scale is 0.1, we need z: 13.8 or so.
+            // Camera is at z: 15. Since scale is 0.02, we need z around 11 to fill the screen
             gsap.to(monitorRef.current.position, {
                 x: 0,
-                y: -0.8,
-                z: 13.5,
-                duration: 1.2,
-                ease: "power3.inOut"
+                y: 0, // perfectly center vertical
+                z: 11.5,
+                duration: 1.4,
+                ease: "expo.inOut"
             })
             gsap.to(monitorRef.current.rotation, {
                 x: 0,
                 y: 0,
                 z: 0,
                 duration: 1.2,
-                ease: "power3.inOut"
+                ease: "power4.inOut"
             })
         } else {
-            // Idle: shift monitor to the left to align with the list view left column
-            // These values depend on screen size, but -4 x is generally a good left offset in a 15z camera
+            // Idle: shift monitor up and left to sit prominently above the list views left column
+            // Raising Y to 3 for desktop so it doesn't hide behind the UI card.
             const isMobile = window.innerWidth < 1024;
             gsap.to(monitorRef.current.position, {
                 x: isMobile ? 0 : -5,
-                y: isMobile ? 2 : -2,
+                y: isMobile ? 2 : 1.5,
                 z: isMobile ? -5 : 0,
-                duration: 1.2,
-                ease: "power3.inOut"
+                duration: 1.4,
+                ease: "expo.inOut"
             })
             gsap.to(monitorRef.current.rotation, {
                 x: 0.1,
                 y: 0.4,
                 z: -0.05,
-                duration: 1.2,
-                ease: "power3.inOut"
+                duration: 1.4,
+                ease: "expo.inOut"
             })
         }
     }, [isDetailActive])
 
     return (
-        <group ref={monitorRef} position={[-5, -4, 0]} rotation={[0.1, 0.4, -0.05]} scale={0.1}>
+        <group ref={monitorRef} position={[-5, 0, 0]} rotation={[0.1, 0.4, -0.05]} scale={0.02}>
             {/* Always pass the hovered/active project image so the screen updates immediately */}
-            <C64Monitor image={project?.image} />
+            <CrtMonitor image={project?.image} />
         </group>
     )
 }
@@ -194,17 +194,20 @@ export const ProjectsPage = () => {
 
         // Fade out list view
         tl.to(listView, {
-            opacity: 0, scale: 0.97, duration: 0.3, ease: "power2.in",
+            opacity: 0, scale: 0.95, y: 20, duration: 0.4, ease: "power2.inOut",
             onComplete: () => gsap.set(listView, { display: "none" })
         }, 0)
 
-        // Show and fade in detail view
+        // Show and fade in centered detail view
         tl.set(detailView, { display: "flex" }, 0.2)
-        tl.fromTo(detailView, { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 0.25)
+        tl.fromTo(detailView, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 0.2)
 
-        // Stagger detail children
-        tl.fromTo(".detail-left", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 0.3)
-        tl.fromTo(".detail-right", { opacity: 0, x: 30 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 0.35)
+        // Slide up the center card
+        tl.fromTo(".detail-content",
+            { opacity: 0, y: 80, scale: 0.95 },
+            { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "power4.out" },
+            0.4
+        )
     }, [isAnimating])
 
     // ── CLOSE DETAIL ──
@@ -223,9 +226,12 @@ export const ProjectsPage = () => {
             }
         })
 
-        tl.to(detailView, { opacity: 0, duration: 0.25, ease: "power2.in" }, 0)
-        tl.set(listView, { display: "flex" }, 0.2)
-        tl.to(listView, { opacity: 1, scale: 1, duration: 0.35, ease: "power3.out" }, 0.25)
+        tl.to(".detail-content", { opacity: 0, y: 40, scale: 0.95, duration: 0.3, ease: "power2.inOut" }, 0)
+        tl.to(detailView, { opacity: 0, duration: 0.3, ease: "power2.inOut" }, 0.1)
+
+        // Bring back the list
+        tl.set(listView, { display: "flex" }, 0.3)
+        tl.to(listView, { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: "power4.out" }, 0.3)
     }, [isAnimating, selectedProject])
 
     // Escape key
@@ -296,11 +302,11 @@ export const ProjectsPage = () => {
                     className="absolute inset-0 flex flex-col lg:flex-row items-center container mx-auto px-6 md:px-16 z-10 pointer-events-none"
                 >
                     {/* Left: Preview + Quick Info (recruiter-friendly) */}
-                    <div className="w-full lg:w-[55%] flex flex-col justify-center h-full gap-5 pt-12 lg:pt-0 pointer-events-none">
+                    <div className="w-full lg:w-[55%] flex flex-col justify-center h-full gap-5 pt-12 lg:pt-0 pointer-events-none relative">
                         {/* 3D Monitor occupies this space visually */}
 
-                        {/* Quick Identity: Title + Tagline */}
-                        <div className="max-w-[500px] pointer-events-auto mt-48 lg:mt-64 xl:mt-80 backdrop-blur-md bg-white/40 p-6 rounded-2xl shadow-sm border border-white/50">
+                        {/* Quick Identity: Title + Tagline pinned to the bottom left so it doesn't overlap the monitor */}
+                        <div className="absolute bottom-10 lg:bottom-16 left-0 max-w-[500px] pointer-events-auto backdrop-blur-md bg-white/40 p-6 rounded-2xl shadow-sm border border-white/50">
                             <h3 className="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight mb-1">
                                 {currentProject?.title}
                             </h3>
@@ -367,47 +373,43 @@ export const ProjectsPage = () => {
                     </div>
                 </div>
 
-                {/* ─── DETAIL VIEW (in-section, uses ScrollArea) ─── */}
+                {/* ─── DETAIL VIEW (Centered Overlay) ─── */}
                 <div
                     ref={detailViewRef}
-                    className="absolute inset-0 hidden flex-col lg:flex-row z-10 pointer-events-none"
+                    className="absolute inset-0 hidden items-center justify-center z-10 pointer-events-none p-6"
                 >
-
-                    {/* Left: Invisible blocker for the 3D Monitor Zoom area */}
-                    <div className="detail-left w-full lg:w-[45%] h-[40%] lg:h-full flex flex-col items-start justify-start p-6 relative pointer-events-none">
-                        {/* Mobile close button */}
+                    {/* Centered Scrollable Content */}
+                    <div className="detail-content w-full max-w-3xl max-h-[85vh] flex flex-col bg-white/85 backdrop-blur-2xl shadow-[0_20px_80px_rgba(0,0,0,0.2)] rounded-3xl pointer-events-auto border border-white/40 overflow-hidden relative mt-20">
+                        {/* mobile close */}
                         <button
                             onClick={closeDetail}
-                            className="absolute top-4 left-4 lg:hidden p-2 bg-white/50 backdrop-blur-md rounded-full shadow-md z-50 hover:bg-white pointer-events-auto"
+                            className="absolute top-4 right-4 p-2 bg-neutral-100 rounded-full shadow-sm z-50 hover:bg-neutral-200 pointer-events-auto"
                         >
-                            <ArrowLeft className="w-5 h-5 text-neutral-900" />
+                            <ArrowLeft className="w-4 h-4 text-neutral-900" />
                         </button>
-                    </div>
 
-                    {/* Right: Scrollable Content */}
-                    <div className="detail-right w-full lg:w-[60%] h-[60%] lg:h-full flex flex-col items-center bg-white/95 backdrop-blur-xl shadow-[0_0_40px_rgba(0,0,0,0.1)] pointer-events-auto border-l border-white/20">
                         <ScrollArea className="h-full w-full">
-                            <div className="py-10 lg:py-16 px-6 lg:px-16 flex flex-col gap-6 w-full max-w-2xl mx-auto">
+                            <div className="py-10 lg:py-14 px-8 lg:px-14 flex flex-col gap-6 w-full mx-auto">
                                 {/* Back + Title */}
-                                <div>
+                                <div className="text-center">
                                     <button
                                         onClick={closeDetail}
-                                        className="hidden lg:flex items-center gap-2 text-sm font-mono text-neutral-400 hover:text-neutral-900 transition-colors cursor-pointer mb-4 group"
+                                        className="hidden lg:inline-flex items-center justify-center gap-2 text-sm font-mono text-neutral-400 hover:text-neutral-900 transition-colors cursor-pointer mb-4 group"
                                     >
                                         <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
                                         Back to projects
                                     </button>
-                                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-neutral-900 tracking-tight leading-tight mb-6">
+                                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-neutral-900 tracking-tight leading-tight mb-4">
                                         {selectedProject?.title}
                                     </h2>
 
                                     {/* CTA */}
-                                    <div className="flex flex-wrap gap-3 mb-6">
+                                    <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
                                         {(selectedProject?.links?.demo || selectedProject?.demo) && (
                                             <a
                                                 href={selectedProject.links?.demo || selectedProject.demo}
                                                 target="_blank" rel="noopener noreferrer"
-                                                className="px-5 py-2.5 bg-neutral-900 text-white font-bold rounded-xl hover:bg-black transition-colors flex items-center gap-2 text-sm shadow-md"
+                                                className="px-5 py-2.5 bg-neutral-900 text-white font-bold rounded-xl hover:bg-black transition-colors flex items-center justify-center gap-2 text-sm shadow-md"
                                             >
                                                 Live Preview <ExternalLink className="w-4 h-4" />
                                             </a>
@@ -416,20 +418,20 @@ export const ProjectsPage = () => {
                                             <a
                                                 href={selectedProject.links?.github || selectedProject.github}
                                                 target="_blank" rel="noopener noreferrer"
-                                                className="px-5 py-2.5 bg-white text-neutral-900 border border-neutral-300 font-bold rounded-xl hover:bg-neutral-50 transition-colors flex items-center gap-2 text-sm shadow-sm"
+                                                className="px-5 py-2.5 bg-white text-neutral-900 border border-neutral-300 font-bold rounded-xl hover:bg-neutral-50 transition-colors flex items-center justify-center gap-2 text-sm shadow-sm"
                                             >
                                                 Source Code <Github className="w-4 h-4" />
                                             </a>
                                         )}
                                     </div>
-                                    <p className="text-sm md:text-base text-neutral-500 italic block">
+                                    <p className="text-sm md:text-base text-neutral-500 italic block mt-4">
                                         {selectedProject?.tagline || selectedProject?.description}
                                     </p>
                                 </div>
 
                                 {/* Stack */}
                                 {(selectedProject?.stack || selectedProject?.tags) && (
-                                    <div className="flex flex-wrap gap-2">
+                                    <div className="flex flex-wrap justify-center gap-2 mt-2">
                                         {(selectedProject.stack || selectedProject.tags).map((tech, i) => (
                                             <span key={i} className="text-xs font-mono px-3 py-1 rounded-full bg-neutral-200 text-neutral-600 border border-neutral-200">
                                                 {tech}
