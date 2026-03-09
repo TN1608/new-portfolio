@@ -23,6 +23,8 @@ export default function Preloader() {
         const orb = orbRef.current
 
         if (container && textWrapper && counter && progress) {
+            // Force scroll to top before locking body so GSAP scroll-triggers orient correctly
+            window.scrollTo(0, 0);
             document.body.style.overflow = "hidden"
 
             const bars = container.querySelectorAll(".reveal-bar")
