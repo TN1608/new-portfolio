@@ -8,7 +8,8 @@ import { ExternalLink, Github, ArrowUpRight, ArrowLeft } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "../ui/separator"
 import { Canvas, useThree } from "@react-three/fiber"
-import { Environment, ContactShadows, OrbitControls } from "@react-three/drei"
+import { Environment, ContactShadows } from "@react-three/drei"
+import { EffectComposer, Bloom } from "@react-three/postprocessing"
 import { Model as CrtMonitor } from "@/assets/3d/Crt_monitor.jsx"
 import { Suspense } from "react"
 
@@ -22,14 +23,13 @@ const MonitorScene = ({ isDetailActive, project }) => {
         if (!monitorRef.current) return;
 
         if (isDetailActive) {
-            // Zoom in: bring the monitor to the center and very close to the camera
-            // Camera is at z: 15. Since scale is 0.02, we need z around 11 to fill the screen
+            // Zoom in: camera-like zoom toward monitor — smooth cinematic
             gsap.to(monitorRef.current.position, {
                 x: 0,
-                y: 0, // perfectly center vertical
+                y: 0,
                 z: 11.5,
-                duration: 1.4,
-                ease: "expo.inOut"
+                duration: 1.2,
+                ease: "power4.inOut"
             })
             gsap.to(monitorRef.current.rotation, {
                 x: 0,
@@ -39,22 +39,21 @@ const MonitorScene = ({ isDetailActive, project }) => {
                 ease: "power4.inOut"
             })
         } else {
-            // Idle: shift monitor up and left to sit prominently above the list views left column
-            // Raising Y from -2 to 0 for a balanced center float
+            // Idle: subtle positioning
             const isMobile = window.innerWidth < 1024;
             gsap.to(monitorRef.current.position, {
                 x: isMobile ? 0 : -5,
                 y: isMobile ? 2 : 0,
                 z: isMobile ? -5 : 0,
-                duration: 1.4,
-                ease: "expo.inOut"
+                duration: 1.2,
+                ease: "power4.inOut"
             })
             gsap.to(monitorRef.current.rotation, {
                 x: 0.1,
                 y: 0.4,
                 z: -0.05,
-                duration: 1.4,
-                ease: "expo.inOut"
+                duration: 1.2,
+                ease: "power4.inOut"
             })
         }
     }, [isDetailActive])
@@ -294,12 +293,22 @@ export const ProjectsPage = () => {
             >
                 {/* ─── 3D BACKGROUND CANVAS ─── */}
                 <div className="canvas-container absolute inset-0 z-0 pointer-events-none">
-                    <Canvas camera={{ position: [0, 0, 15], fov: 45 }}>
+                    <Canvas camera={{ position: [0, 0, 15], fov: 45 }} gl={{ toneMapped: true }}>
                         <Suspense fallback={null}>
                             <ambientLight intensity={1.5} />
                             <Environment preset="city" />
                             <MonitorScene isDetailActive={selectedProject !== null} project={currentProject} />
                             <ContactShadows position={[0, -4, 0]} opacity={0.4} scale={20} blur={2} />
+
+                            {/* Subtle Bloom for CRT screen light bleed */}
+                            <EffectComposer>
+                                <Bloom
+                                    intensity={0.3}
+                                    luminanceThreshold={0.8}
+                                    luminanceSmoothing={0.9}
+                                    mipmapBlur
+                                />
+                            </EffectComposer>
                         </Suspense>
                     </Canvas>
                 </div>

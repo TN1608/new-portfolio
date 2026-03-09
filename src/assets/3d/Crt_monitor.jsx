@@ -7,40 +7,115 @@ Source: https://sketchfab.com/3d-models/crt-monitor-e2dd2887a8904e4fa3d5a32e2935
 Title: CRT Monitor
 */
 
-import React, { useState, useEffect, useRef } from 'react'
-import { useGLTF, Image } from '@react-three/drei'
-import { useFrame } from '@react-three/fiber'
+import React, { useEffect, useRef, useMemo } from 'react'
+import { useGLTF } from '@react-three/drei'
+import { useFrame, useLoader } from '@react-three/fiber'
 import * as THREE from 'three'
+import { gsap } from 'gsap'
+
+// Screen dimensions — true 16:9 aspect ratio
+const SCREEN_WIDTH = 134
+const SCREEN_HEIGHT = SCREEN_WIDTH * (9 / 16) // ≈ 75.375
+const SCREEN_POSITION = [0, -5, 115]
 
 export function Model({ image, ...props }) {
   const { nodes, materials } = useGLTF('/models/crt_monitor.glb')
-  const screenRef = useRef()
 
-  const [isGlitching, setIsGlitching] = useState(false)
+  // Refs for dual-plane crossfade
+  const planeARef = useRef()
+  const planeBRef = useRef()
+  const activePlane = useRef('A') // Which plane is currently showing
+  const prevImage = useRef(null)
 
+  // Load placeholder as fallback
+  const placeholderUrl = '/img/placeholder.jpg'
+
+  // We manage textures imperatively for smooth crossfade
+  const textureLoader = useMemo(() => new THREE.TextureLoader(), [])
+
+  // Create shared geometry and materials once
+  const screenGeo = useMemo(() => new THREE.PlaneGeometry(SCREEN_WIDTH, SCREEN_HEIGHT), [])
+
+  const matA = useMemo(() => new THREE.MeshStandardMaterial({
+    color: '#ffffff',
+    emissive: '#ffffff',
+    emissiveIntensity: 1.2,
+    roughness: 0.4,
+    metalness: 0,
+    toneMapped: true,
+    transparent: true,
+    opacity: 1,
+  }), [])
+
+  const matB = useMemo(() => new THREE.MeshStandardMaterial({
+    color: '#ffffff',
+    emissive: '#ffffff',
+    emissiveIntensity: 1.2,
+    roughness: 0.4,
+    metalness: 0,
+    toneMapped: true,
+    transparent: true,
+    opacity: 0,
+  }), [])
+
+  // Load initial placeholder texture
   useEffect(() => {
-    if (image) {
-      setIsGlitching(true)
-      const timer = setTimeout(() => {
-        setIsGlitching(false)
-        if (screenRef.current) {
-          screenRef.current.position.set(0, -5, 115) // Reset baseline
-          screenRef.current.material.color.set("#ffffff")
-        }
-      }, 300)
-      return () => clearTimeout(timer)
-    }
-  }, [image])
+    const tex = textureLoader.load(placeholderUrl)
+    tex.colorSpace = THREE.SRGBColorSpace
+    tex.minFilter = THREE.LinearFilter
+    tex.magFilter = THREE.LinearFilter
+    matA.map = tex
+    matA.emissiveMap = tex
+    matA.needsUpdate = true
+  }, [])
 
-  // Native WebGL Glitch Effect (Jittering the mesh itself creates an identical offset tracking effect)
-  useFrame(() => {
-    if (screenRef.current && isGlitching) {
-      const xOffset = (Math.random() - 0.5) * 4;
-      const yOffset = -5 + (Math.random() - 0.5) * 2;
-      screenRef.current.position.set(xOffset, yOffset, 115);
-      screenRef.current.material.color.set("#dddddd");
-    }
-  })
+  // Handle image changes with smooth crossfade
+  useEffect(() => {
+    const url = image || placeholderUrl
+    if (url === prevImage.current) return
+    prevImage.current = url
+
+    // Determine which plane is currently hidden (target)
+    const isAActive = activePlane.current === 'A'
+    const targetMat = isAActive ? matB : matA
+    const currentMat = isAActive ? matA : matB
+
+    // Load the new texture
+    textureLoader.load(url, (tex) => {
+      tex.colorSpace = THREE.SRGBColorSpace
+      tex.minFilter = THREE.LinearFilter
+      tex.magFilter = THREE.LinearFilter
+
+      // Apply to the hidden plane
+      targetMat.map = tex
+      targetMat.emissiveMap = tex
+      targetMat.needsUpdate = true
+
+      // Crossfade: fade target in, fade current out
+      gsap.to(targetMat, {
+        opacity: 1,
+        duration: 0.7,
+        ease: "power3.out",
+      })
+      gsap.to(currentMat, {
+        opacity: 0,
+        duration: 0.7,
+        ease: "power3.out",
+      })
+
+      // Subtle scale pulse during transition
+      const targetPlane = isAActive ? planeBRef.current : planeARef.current
+      if (targetPlane) {
+        gsap.fromTo(targetPlane.scale,
+          { x: 1.03, y: 1.03 },
+          { x: 1, y: 1, duration: 0.8, ease: "power3.out" }
+        )
+      }
+
+      // Flip active indicator
+      activePlane.current = isAActive ? 'B' : 'A'
+    })
+  }, [image])
 
   return (
     <group {...props} dispose={null}>
@@ -50,18 +125,21 @@ export function Model({ image, ...props }) {
         </group>
       </group>
 
-      {/* 
-        Image component mathematically builds a shader mapping with rounded corners, 
-        eliminating arbitrary UV wrap conflicts of RoundedBox geometries. 
-        Scale [132, 98] is calculated to fit perfectly inside the black inner bevel of the CRT glass.
-      */}
-      <Image
-        ref={screenRef}
-        url={image || '/img/placeholder.jpg'}
-        position={[0, -5, 115]}
-        scale={[134, 102]}
-        radius={0.06}
-        toneMapped={false}
+      {/* Dual-Plane Crossfade Screen */}
+      {/* Plane A (starts visible) */}
+      <mesh
+        ref={planeARef}
+        geometry={screenGeo}
+        material={matA}
+        position={SCREEN_POSITION}
+      />
+
+      {/* Plane B (starts hidden, used for crossfade target) */}
+      <mesh
+        ref={planeBRef}
+        geometry={screenGeo}
+        material={matB}
+        position={[SCREEN_POSITION[0], SCREEN_POSITION[1], SCREEN_POSITION[2] + 0.5]}
       />
     </group>
   )
