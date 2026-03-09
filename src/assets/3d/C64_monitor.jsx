@@ -19,6 +19,10 @@ export function Model({ image, ...props }) {
   const texture = useTexture(image || '/img/placeholder.jpg', (tex) => {
     // The default orientation for planes in THREE might require flipY adjustment depending on the texture
     tex.flipY = false;
+
+    // Rotate the texture 90 degrees if it's appearing sideways on the plane
+    tex.center.set(0.5, 0.5);
+    tex.rotation = -Math.PI / 2;
   })
 
   // We need to carefully position the plane over the monitor screen
@@ -39,7 +43,6 @@ export function Model({ image, ...props }) {
         <meshBasicMaterial
           map={texture}
           toneMapped={false}
-          color="#ffffff"
         />
       </mesh>
     </group>

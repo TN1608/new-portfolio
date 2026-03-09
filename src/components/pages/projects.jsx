@@ -23,10 +23,10 @@ const MonitorScene = ({ isDetailActive, project }) => {
 
         if (isDetailActive) {
             // Zoom in: bring the monitor to the center and very close to the camera
-            // Since scale is now 0.12, we need z: 13.5 (Camera is at z: 15)
+            // Camera is at z: 15. Since scale is 0.1, we need z: 13.8 or so.
             gsap.to(monitorRef.current.position, {
                 x: 0,
-                y: -1.2,
+                y: -0.8,
                 z: 13.5,
                 duration: 1.2,
                 ease: "power3.inOut"
@@ -60,7 +60,7 @@ const MonitorScene = ({ isDetailActive, project }) => {
     }, [isDetailActive])
 
     return (
-        <group ref={monitorRef} position={[-5, -2, 0]} rotation={[0.1, 0.4, -0.05]} scale={0.12}>
+        <group ref={monitorRef} position={[-5, -4, 0]} rotation={[0.1, 0.4, -0.05]} scale={0.1}>
             {/* Always pass the hovered/active project image so the screen updates immediately */}
             <C64Monitor image={project?.image} />
         </group>
@@ -296,16 +296,12 @@ export const ProjectsPage = () => {
                     className="absolute inset-0 flex flex-col lg:flex-row items-center container mx-auto px-6 md:px-16 z-10 pointer-events-none"
                 >
                     {/* Left: Preview + Quick Info (recruiter-friendly) */}
-                    <div className="w-full lg:w-[55%] flex flex-col justify-center h-full gap-5 pt-12 lg:pt-0">
-                        {/* Invisible area - interaction removed for left side clicking to focus on title clicks */}
-                        <div className="relative w-full max-w-[520px] aspect-square lg:aspect-video" />
+                    <div className="w-full lg:w-[55%] flex flex-col justify-center h-full gap-5 pt-12 lg:pt-0 pointer-events-none">
+                        {/* 3D Monitor occupies this space visually */}
 
                         {/* Quick Identity: Title + Tagline */}
-                        <div className="max-w-[520px] pointer-events-auto mt-4 lg:mt-0 xl:mt-12 backdrop-blur-md bg-white/40 p-6 rounded-2xl shadow-sm border border-white/50">
-                            <h3
-                                className="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight mb-1 cursor-pointer hover:text-cyan-600 transition-colors inline-block"
-                                onClick={() => openDetail(currentProject)}
-                            >
+                        <div className="max-w-[500px] pointer-events-auto mt-48 lg:mt-64 xl:mt-80 backdrop-blur-md bg-white/40 p-6 rounded-2xl shadow-sm border border-white/50">
+                            <h3 className="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight mb-1">
                                 {currentProject?.title}
                             </h3>
                             <p className="text-sm text-neutral-600 leading-relaxed mb-3">
@@ -389,9 +385,9 @@ export const ProjectsPage = () => {
                     </div>
 
                     {/* Right: Scrollable Content */}
-                    <div className="detail-right w-full lg:w-[55%] h-[60%] lg:h-full flex flex-col bg-white/95 backdrop-blur-xl shadow-[0_0_40px_rgba(0,0,0,0.1)] pointer-events-auto border-l border-white/20">
+                    <div className="detail-right w-full lg:w-[60%] h-[60%] lg:h-full flex flex-col items-center bg-white/95 backdrop-blur-xl shadow-[0_0_40px_rgba(0,0,0,0.1)] pointer-events-auto border-l border-white/20">
                         <ScrollArea className="h-full w-full">
-                            <div className="py-10 lg:py-16 pr-8 lg:pr-16 pl-6 lg:pl-10 flex flex-col gap-6 max-w-xl">
+                            <div className="py-10 lg:py-16 px-6 lg:px-16 flex flex-col gap-6 w-full max-w-2xl mx-auto">
                                 {/* Back + Title */}
                                 <div>
                                     <button
