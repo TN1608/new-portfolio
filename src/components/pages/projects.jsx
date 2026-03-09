@@ -40,11 +40,11 @@ const MonitorScene = ({ isDetailActive, project }) => {
             })
         } else {
             // Idle: shift monitor up and left to sit prominently above the list views left column
-            // Raising Y to 3 for desktop so it doesn't hide behind the UI card.
+            // Raising Y from -2 to 0 for a balanced center float
             const isMobile = window.innerWidth < 1024;
             gsap.to(monitorRef.current.position, {
                 x: isMobile ? 0 : -5,
-                y: isMobile ? 2 : 1.5,
+                y: isMobile ? 2 : 0,
                 z: isMobile ? -5 : 0,
                 duration: 1.4,
                 ease: "expo.inOut"
@@ -198,15 +198,20 @@ export const ProjectsPage = () => {
             onComplete: () => gsap.set(listView, { display: "none" })
         }, 0)
 
+        // Fade out the 3D Canvas smoothly while the camera zooms in
+        tl.to(".canvas-container", {
+            opacity: 0, duration: 1, ease: "power2.inOut"
+        }, 0.2)
+
         // Show and fade in centered detail view
-        tl.set(detailView, { display: "flex" }, 0.2)
-        tl.fromTo(detailView, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 0.2)
+        tl.set(detailView, { display: "flex" }, 0.4)
+        tl.fromTo(detailView, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 0.4)
 
         // Slide up the center card
         tl.fromTo(".detail-content",
             { opacity: 0, y: 80, scale: 0.95 },
             { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "power4.out" },
-            0.4
+            0.6
         )
     }, [isAnimating])
 
@@ -228,6 +233,9 @@ export const ProjectsPage = () => {
 
         tl.to(".detail-content", { opacity: 0, y: 40, scale: 0.95, duration: 0.3, ease: "power2.inOut" }, 0)
         tl.to(detailView, { opacity: 0, duration: 0.3, ease: "power2.inOut" }, 0.1)
+
+        // Fade the 3D Canvas back in
+        tl.to(".canvas-container", { opacity: 1, duration: 0.8, ease: "power2.inOut" }, 0.2)
 
         // Bring back the list
         tl.set(listView, { display: "flex" }, 0.3)
@@ -285,7 +293,7 @@ export const ProjectsPage = () => {
                 className="relative h-screen overflow-hidden"
             >
                 {/* ─── 3D BACKGROUND CANVAS ─── */}
-                <div className="absolute inset-0 z-0 pointer-events-none">
+                <div className="canvas-container absolute inset-0 z-0 pointer-events-none">
                     <Canvas camera={{ position: [0, 0, 15], fov: 45 }}>
                         <Suspense fallback={null}>
                             <ambientLight intensity={1.5} />
@@ -376,30 +384,29 @@ export const ProjectsPage = () => {
                 {/* ─── DETAIL VIEW (Centered Overlay) ─── */}
                 <div
                     ref={detailViewRef}
-                    className="absolute inset-0 hidden items-center justify-center z-10 pointer-events-none p-6"
+                    className="absolute inset-0 hidden items-center justify-center z-10 pointer-events-none p-4"
                 >
                     {/* Centered Scrollable Content */}
-                    <div className="detail-content w-full max-w-3xl max-h-[85vh] flex flex-col bg-white/85 backdrop-blur-2xl shadow-[0_20px_80px_rgba(0,0,0,0.2)] rounded-3xl pointer-events-auto border border-white/40 overflow-hidden relative mt-20">
-                        {/* mobile close */}
-                        <button
-                            onClick={closeDetail}
-                            className="absolute top-4 right-4 p-2 bg-neutral-100 rounded-full shadow-sm z-50 hover:bg-neutral-200 pointer-events-auto"
-                        >
-                            <ArrowLeft className="w-4 h-4 text-neutral-900" />
-                        </button>
+                    <div className="detail-content w-full max-w-4xl max-h-[85vh] flex flex-col bg-white/95 backdrop-blur-2xl shadow-[0_20px_80px_rgba(0,0,0,0.2)] rounded-3xl pointer-events-auto border border-white/40 overflow-hidden relative">
 
-                        <ScrollArea className="h-full w-full">
-                            <div className="py-10 lg:py-14 px-8 lg:px-14 flex flex-col gap-6 w-full mx-auto">
+                        <div className="overflow-y-auto w-full flex-1 relative min-h-0 custom-scrollbar">
+                            <div className="py-8 lg:py-10 px-6 lg:px-12 flex flex-col gap-6 w-full mx-auto">
                                 {/* Back + Title */}
-                                <div className="text-center">
+                                <div className="text-center relative">
                                     <button
                                         onClick={closeDetail}
-                                        className="hidden lg:inline-flex items-center justify-center gap-2 text-sm font-mono text-neutral-400 hover:text-neutral-900 transition-colors cursor-pointer mb-4 group"
+                                        className="lg:hidden absolute left-0 top-0 p-2 bg-neutral-100 rounded-full shadow-sm z-50 hover:bg-neutral-200"
+                                    >
+                                        <ArrowLeft className="w-4 h-4 text-neutral-900" />
+                                    </button>
+                                    <button
+                                        onClick={closeDetail}
+                                        className="hidden lg:inline-flex items-center justify-center gap-2 text-sm font-mono text-neutral-400 hover:text-neutral-900 transition-colors cursor-pointer mb-2 group"
                                     >
                                         <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
                                         Back to projects
                                     </button>
-                                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-neutral-900 tracking-tight leading-tight mb-4">
+                                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-neutral-900 tracking-tight leading-tight mb-2 mt-8 lg:mt-0">
                                         {selectedProject?.title}
                                     </h2>
 
@@ -484,7 +491,7 @@ export const ProjectsPage = () => {
 
                                 <div className="h-px w-full bg-neutral-200" />
                             </div>
-                        </ScrollArea>
+                        </div>
                     </div>
                 </div >
             </section >

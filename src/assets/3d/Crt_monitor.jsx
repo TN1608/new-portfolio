@@ -7,65 +7,62 @@ Source: https://sketchfab.com/3d-models/crt-monitor-e2dd2887a8904e4fa3d5a32e2935
 Title: CRT Monitor
 */
 
-import React, { useState, useEffect } from 'react'
-import { useGLTF, Html } from '@react-three/drei'
+import React, { useState, useEffect, useRef } from 'react'
+import { useGLTF, Image } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
 export function Model({ image, ...props }) {
   const { nodes, materials } = useGLTF('/models/crt_monitor.glb')
+  const screenRef = useRef()
+
   const [isGlitching, setIsGlitching] = useState(false)
 
-  // Trigger glitch effect when the image (hovered project) changes
   useEffect(() => {
     if (image) {
       setIsGlitching(true)
-      const timer = setTimeout(() => setIsGlitching(false), 400) // glitch duration
+      const timer = setTimeout(() => {
+        setIsGlitching(false)
+        if (screenRef.current) {
+          screenRef.current.position.set(0, -5, 115) // Reset baseline
+          screenRef.current.material.color.set("#ffffff")
+        }
+      }, 300)
       return () => clearTimeout(timer)
     }
   }, [image])
+
+  // Native WebGL Glitch Effect (Jittering the mesh itself creates an identical offset tracking effect)
+  useFrame(() => {
+    if (screenRef.current && isGlitching) {
+      const xOffset = (Math.random() - 0.5) * 4;
+      const yOffset = -5 + (Math.random() - 0.5) * 2;
+      screenRef.current.position.set(xOffset, yOffset, 115);
+      screenRef.current.material.color.set("#dddddd");
+    }
+  })
+
   return (
     <group {...props} dispose={null}>
-      {/* Rotate the model -90 degrees so the true front screen faces the camera */}
       <group rotation={[0, -Math.PI / 2, 0]}>
-        {/* Offset group to center the geometry. The raw mesh was shifted by X=-71.88, Y=20.78 */}
         <group position={[71.88, -20.78, 0]}>
           <mesh geometry={nodes.Cube_Material_0.geometry} material={materials.Material} position={[-10.03, 0.134, 0]} rotation={[-Math.PI / 2, 0, 0]} scale={100} />
         </group>
       </group>
 
-      {/* HTML DOM Screen Overlay */}
-      <Html
-        transform
-        // Z=85 seats it perfectly behind the thick plastic bevel of the rotated CRT.
-        position={[0, 0, 85]}
-        // Scale 0.2 maps our 800px wide div to the 160 units of the CRT frame hole
-        scale={0.2}
-        rotation={[0, 0, 0]}
-        zIndexRange={[0, 0]} // prevent HTML from overlapping other HTML UI
-      >
-        <div
-          className={`bg-black overflow-hidden flex items-center justify-center pointer-events-none rounded-[3rem] ${isGlitching ? 'screen-glitch' : ''
-            }`}
-          style={{
-            width: '800px',
-            height: '633px',
-            boxShadow: 'inset 0 0 50px rgba(0,0,0,0.8)' // Inner tube shadow
-          }}
-        >
-          {image ? (
-            <img
-              src={image}
-              alt="Project screen"
-              className="w-full h-full object-cover opacity-90 mix-blend-screen"
-            />
-          ) : (
-            <div className="text-green-500 font-mono text-4xl mt-12 animate-pulse">NO SIGNAL</div>
-          )}
-
-          {/* Subtle horizontal scanline overlay */}
-          <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%] z-10 mix-blend-overlay"></div>
-        </div>
-      </Html>
+      {/* 
+        Image component mathematically builds a shader mapping with rounded corners, 
+        eliminating arbitrary UV wrap conflicts of RoundedBox geometries. 
+        Scale [132, 98] is calculated to fit perfectly inside the black inner bevel of the CRT glass.
+      */}
+      <Image
+        ref={screenRef}
+        url={image || '/img/placeholder.jpg'}
+        position={[0, -5, 115]}
+        scale={[134, 102]}
+        radius={0.06}
+        toneMapped={false}
+      />
     </group>
   )
 }
