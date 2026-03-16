@@ -33,20 +33,13 @@ export const Hero = forwardRef((props, ref) => {
                 delay: 4.8 // Wait for preloader to finish fully
             })
 
-            // 1. Background image reveals via clip-path and scales down
+            // 1. Background image reveals via clip-path
             gsap.set(bgWrapperRef.current, { clipPath: "inset(25% 15% 25% 15% round 20px)" })
-            gsap.set(bgImageRef.current, { scale: 1.3 })
-
+            
             tl.to(bgWrapperRef.current, {
                 clipPath: "inset(0% 0% 0% 0% round 0px)",
                 duration: 1.6,
                 ease: "expo.inOut"
-            }, 0)
-
-            tl.to(bgImageRef.current, {
-                scale: 1,
-                duration: 1.8,
-                ease: "expo.out"
             }, 0)
 
             // 1.5 Badge pops up
@@ -112,12 +105,11 @@ export const Hero = forwardRef((props, ref) => {
                 scrub: true,
                 animation: gsap.timeline()
                     .to(bgWrapperRef.current, {
-                        scale: 0.85, 
                         borderRadius: "40px", 
                         opacity: 0,
                         ease: "power1.inOut" 
                     }, 0)
-                    .to(headingWrapRef.current, { yPercent: -40, opacity: 0, scale: 0.9, ease: "power1.inOut" }, 0)
+                    .to(headingWrapRef.current, { yPercent: -40, opacity: 0, ease: "power1.inOut" }, 0)
                     .to(subRef.current, { yPercent: -60, opacity: 0, ease: "power1.inOut" }, 0)
                     .to(ctaRef.current, { yPercent: -80, opacity: 0, ease: "power1.inOut" }, 0)
                     .to(scrollIndicatorRef.current, { opacity: 0, ease: "power1.inOut" }, 0)

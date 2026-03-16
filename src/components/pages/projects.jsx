@@ -91,6 +91,7 @@ export const ProjectsPage = () => {
     const showcaseRef = useRef(null)
     const listViewRef = useRef(null)
     const detailViewRef = useRef(null)
+    const waveRef = useRef(null)
 
     const [activeIndex, setActiveIndex] = useState(0)
     const [selectedProject, setSelectedProject] = useState(null)
@@ -127,40 +128,34 @@ export const ProjectsPage = () => {
                 const img = images[i]
                 const speed = 1 + (i * 0.3)
 
-                // Set initial states: wrapper is tiny/hidden, image is scaled up
+                // Set initial states: wrapper is positioned lower and hidden
                 gsap.set(wrapper, {
-                    scale: 0.2,
                     opacity: 0,
-                    y: 100 + (50 * i),
+                    y: 150 + (50 * i),
                     rotation: i % 2 === 0 ? -15 : 15
                 })
-                gsap.set(img, {
-                    scale: 2
-                })
 
-                // Reveal wrappers (zoom in + move up + straighten)
+                // Reveal wrappers (move up + straighten)
                 tl.to(wrapper, {
-                    scale: 1,
                     opacity: 1,
                     y: -50 * speed,
                     rotation: i % 2 === 0 ? 3 : -3,
-                    ease: "back.out(1.2)",
+                    ease: "power3.out",
                     duration: 1.5
                 }, i * 0.15) 
 
-                // Parallax scale down the image inside
+                // Parallax inside the image (just movement, no scale)
                 tl.to(img, {
-                    scale: 1,
-                    ease: "power3.inOut",
+                    yPercent: -10,
+                    ease: "none",
                     duration: 1.5
                 }, i * 0.15)
-
-                // Zoom PAST them aggressively into the Projects List
+                
+                // Fade out softly as they go past
                 tl.to(wrapper, {
                     opacity: 0,
-                    scale: 4, 
-                    y: -300 * speed,
-                    ease: "power2.in",
+                    y: -150 * speed,
+                    ease: "power2.inOut",
                     duration: 0.8
                 }, 1.4 + (i * 0.1))
             })
@@ -185,40 +180,53 @@ export const ProjectsPage = () => {
     const currentDemo = currentProject?.links?.demo || currentProject?.demo || ""
     const currentGithub = currentProject?.links?.github || currentProject?.github || ""
 
-    // ── OPEN DETAIL (Centered Overlay layout) ──
+    // ── OPEN DETAIL (Wave Transition & Scroll Lock) ──
     const openDetail = useCallback((project) => {
         if (isAnimating) return
         setIsAnimating(true)
         setSelectedProject(project)
 
+        // Lock background scroll
+        if (window.__lenis) window.__lenis.stop()
+
         const listView = listViewRef.current
         const detailView = detailViewRef.current
+        const wave = waveRef.current
 
         const tl = gsap.timeline({ onComplete: () => setIsAnimating(false) })
 
-        // Fade out list view
-        tl.to(listView, {
-            opacity: 0, scale: 0.95, y: 20, duration: 0.4, ease: "power2.inOut",
-            onComplete: () => gsap.set(listView, { display: "none" })
+        // Show centered detail view wrapper
+        tl.set(detailView, { display: "flex", pointerEvents: "auto", opacity: 1 }, 0)
+        
+        // Initial state of wave (tiny dot in center)
+        tl.set(wave, {
+            clipPath: "circle(0% at 50% 50%)",
+            display: "flex",
         }, 0)
 
-        // Show centered detail view but keep opacity 0
-        tl.set(detailView, { display: "flex", pointerEvents: "auto" }, 0.4)
-        tl.set(detailView, { opacity: 0 }, 0.4)
+        // Wave expands to fill screen
+        tl.to(wave, {
+            clipPath: "circle(150% at 50% 50%)",
+            duration: 1.2,
+            ease: "power4.inOut"
+        }, 0)
 
-        // Fade out the 3D Canvas smoothly AFTER the camera zooms in (zoom takes 1.2s)
+        // Simultaneously fade out list view behind the wave
+        tl.to(listView, {
+            opacity: 0, scale: 0.95, y: 20, duration: 0.5, ease: "power2.inOut",
+            onComplete: () => gsap.set(listView, { display: "none" })
+        }, 0.2)
+
+        // Fade out the 3D Canvas
         tl.to(".canvas-container", {
             opacity: 0, duration: 0.5, ease: "power2.inOut"
-        }, 1.0) // Start fading out as zoom finishes
+        }, 0.3)
 
-        // Fade in detail view
-        tl.to(detailView, { opacity: 1, duration: 0.6, ease: "power2.out" }, 1.0)
-
-        // Slide up the center card
+        // Slide up the center card content INSIDE the expanded wave
         tl.fromTo(".detail-content",
             { opacity: 0, y: 80, scale: 0.95 },
             { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "power4.out" },
-            1.2
+            0.6
         )
     }, [isAnimating])
 
@@ -229,24 +237,37 @@ export const ProjectsPage = () => {
 
         const listView = listViewRef.current
         const detailView = detailViewRef.current
+        const wave = waveRef.current
 
         const tl = gsap.timeline({
             onComplete: () => {
                 setSelectedProject(null)
                 setIsAnimating(false)
                 gsap.set(detailView, { display: "none", pointerEvents: "none" })
+                // Unlock background scroll
+                if (window.__lenis) window.__lenis.start()
             }
         })
 
-        tl.to(".detail-content", { opacity: 0, y: 40, scale: 0.95, duration: 0.3, ease: "power2.inOut" }, 0)
-        tl.to(detailView, { opacity: 0, duration: 0.3, ease: "power2.inOut" }, 0.1)
+        // Fade out detail content
+        tl.to(".detail-content", { opacity: 0, y: 40, scale: 0.95, duration: 0.4, ease: "power2.inOut" }, 0)
+        
+        // Retract Wave
+        tl.to(wave, {
+            clipPath: "circle(0% at 50% 50%)",
+            duration: 1,
+            ease: "power4.inOut"
+        }, 0.2)
+        
+        // Bring back the list early, before wave fully closes
+        tl.set(listView, { display: "flex" }, 0.4)
+        tl.to(listView, { opacity: 1, scale: 1, y: 0, duration: 0.6, ease: "power4.out" }, 0.4)
 
-        // Bring back the list
-        tl.set(listView, { display: "flex" }, 0.3)
-        tl.to(listView, { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: "power4.out" }, 0.3)
-
-        // Fade the 3D Canvas back in immediately so we see it zoom out
-        tl.to(".canvas-container", { opacity: 1, duration: 0.5, ease: "power2.inOut" }, 0.2)
+        // Fade the 3D Canvas back in
+        tl.to(".canvas-container", { opacity: 1, duration: 0.6, ease: "power2.inOut" }, 0.4)
+        
+        // Ensure wave disappears seamlessly
+        tl.set(wave, { display: "none" }, 1.2)
     }, [isAnimating, selectedProject])
 
     // Escape key
@@ -400,15 +421,20 @@ export const ProjectsPage = () => {
                     </div>
                 </div>
 
-                {/* ─── DETAIL VIEW (Centered Overlay) ─── */}
                 <div
                     ref={detailViewRef}
-                    className="absolute inset-0 hidden items-center justify-center z-10 pointer-events-none p-4"
+                    className="absolute inset-0 hidden items-center justify-center z-50 pointer-events-none p-4"
                 >
-                    {/* Centered Scrollable Content */}
-                    <div className="detail-content w-full max-w-4xl max-h-[85vh] flex flex-col bg-white/95 backdrop-blur-2xl shadow-[0_20px_80px_rgba(0,0,0,0.2)] rounded-3xl pointer-events-auto border border-white/40 overflow-hidden relative">
-
-                        <div className="overflow-y-auto w-full flex-1 relative min-h-0 custom-scrollbar">
+                    {/* The Expanding Wave Background */}
+                    <div 
+                        ref={waveRef}
+                        className="absolute inset-0 bg-white/95 backdrop-blur-2xl items-center justify-center"
+                        style={{ display: "none" }}
+                    >
+                        {/* Centered Scrollable Content */}
+                        <div className="detail-content w-full max-w-4xl max-h-[85vh] flex flex-col shadow-[0_20px_80px_rgba(0,0,0,0.1)] rounded-3xl pointer-events-auto overflow-hidden relative border border-black/5 bg-white">
+                            
+                            <div className="overflow-y-auto w-full flex-1 relative min-h-0 custom-scrollbar overscroll-contain">
                             <div className="py-8 lg:py-10 px-6 lg:px-12 flex flex-col gap-6 w-full mx-auto">
                                 {/* Back + Title */}
                                 <div className="text-center relative">
@@ -512,6 +538,7 @@ export const ProjectsPage = () => {
                             </div>
                         </div>
                     </div>
+                </div>
                 </div>
             </section >
         </div >
