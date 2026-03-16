@@ -125,11 +125,11 @@ export const AboutPage = () => {
         <section
             ref={sectionRef}
             id="about"
-            className="relative bg-white text-neutral-900 pb-12"
+            className="relative bg-background text-foreground pb-12"
         >
             {/* ── HERO INTRO ── */}
             <div className="min-h-[60vh] flex flex-col items-center justify-center px-6 text-center pt-32 pb-16">
-                <span className="about-hero-fade text-[10px] md:text-sm font-mono uppercase tracking-[0.4em] text-neutral-400 mb-6 block">
+                <span className="about-hero-fade text-[10px] md:text-sm font-mono uppercase tracking-[0.4em] text-muted-foreground mb-6 block">
                     Focus & Identity
                 </span>
                 <BlurText
@@ -137,9 +137,9 @@ export const AboutPage = () => {
                     delay={60}
                     animateBy="words"
                     direction="top"
-                    className="text-4xl sm:text-5xl md:text-7xl lg:text-[80px] font-black text-neutral-900 tracking-tight leading-none justify-center text-center mb-6"
+                    className="text-4xl sm:text-5xl md:text-7xl lg:text-[80px] font-black text-foreground tracking-tight leading-none justify-center text-center mb-6"
                 />
-                <h2 className="about-hero-fade text-sm sm:text-base md:text-xl text-neutral-500 max-w-2xl mx-auto font-medium">
+                <h2 className="about-hero-fade text-sm sm:text-base md:text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
                     Developer. Design thinker. Pixel perfectionist.
                 </h2>
             </div>
@@ -160,19 +160,19 @@ export const AboutPage = () => {
                             <div className={`w-full ${isCenter ? 'max-w-3xl' : 'md:w-1/2'} flex flex-col ${isCenter ? 'items-center' : ''}`}>
                                 {/* Tag with line */}
                                 <div className={`flex items-center gap-4 mb-6 ${isCenter ? 'justify-center' : ''}`}>
-                                    <span className="story-tag text-xs font-bold font-mono uppercase tracking-[0.2em] text-neutral-400">
+                                    <span className="story-tag text-xs font-bold font-mono uppercase tracking-[0.2em] text-muted-foreground">
                                         {section.tag}
                                     </span>
                                     {!isCenter && <div className="story-line h-px w-16 bg-neutral-300 origin-left" />}
                                 </div>
 
                                 {/* Heading */}
-                                <h3 className="story-heading text-4xl sm:text-5xl md:text-6xl font-black text-neutral-900 tracking-tight leading-[1.1] mb-6">
+                                <h3 className="story-heading text-4xl sm:text-5xl md:text-6xl font-black text-foreground tracking-tight leading-[1.1] mb-6">
                                     {section.heading}
                                 </h3>
 
                                 {/* Body with Word Splitting for GSAP Animation */}
-                                <p className={`text-lg md:text-2xl font-medium text-neutral-500 leading-relaxed flex flex-wrap gap-x-[0.3em] gap-y-[0.2em] ${isCenter ? 'justify-center' : ''}`}>
+                                <p className={`text-lg md:text-2xl font-medium text-muted-foreground leading-relaxed flex flex-wrap gap-x-[0.3em] gap-y-[0.2em] ${isCenter ? 'justify-center' : ''}`}>
                                     {section.body.split(" ").map((word, wordIndex) => (
                                         <span key={wordIndex} className="story-word inline-block will-change-[transform,opacity,filter]">
                                             {word}
@@ -204,9 +204,9 @@ export const AboutPage = () => {
                     delay={40}
                     animateBy="words"
                     direction="top"
-                    className="text-xl sm:text-2xl md:text-4xl text-neutral-800 max-w-4xl mx-auto justify-center text-center font-bold leading-snug mb-8"
+                    className="text-xl sm:text-2xl md:text-4xl text-foreground max-w-4xl mx-auto justify-center text-center font-bold leading-snug mb-8"
                 />
-                <p className="text-xs font-mono text-neutral-400 tracking-[0.3em] uppercase">
+                <p className="text-xs font-mono text-muted-foreground tracking-[0.3em] uppercase">
                     — Nguyen Dinh Tuan
                 </p>
             </div>

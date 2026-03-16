@@ -63,16 +63,16 @@ export const ContactPage = () => {
         <section
             ref={sectionRef}
             id="contact"
-            className="relative bg-neutral-50 overflow-hidden"
+            className="relative bg-muted overflow-hidden"
         >
             {/* Divider transition from About */}
-            <div className="contact-line-draw h-px bg-neutral-200 origin-left mx-6 md:mx-16" />
+            <div className="contact-line-draw h-px bg-muted origin-left mx-6 md:mx-16" />
 
             <div className="min-h-screen flex flex-col justify-center px-6 md:px-16 lg:px-24 py-24 md:py-32">
 
                 {/* ── TOP: Small label ── */}
                 <div className="contact-animate mb-12 md:mb-20">
-                    <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-neutral-500 flex items-center gap-3">
+                    <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-muted-foreground flex items-center gap-3">
                         <span className="w-6 h-px bg-neutral-300 inline-block" />
                         Get In Touch
                     </span>
@@ -85,14 +85,14 @@ export const ContactPage = () => {
                         delay={60}
                         animateBy="words"
                         direction="top"
-                        className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-neutral-900 tracking-tight leading-none mb-2"
+                        className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-foreground tracking-tight leading-none mb-2"
                     />
                     <BlurText
                         text="extraordinary together."
                         delay={60}
                         animateBy="words"
                         direction="top"
-                        className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-neutral-900 tracking-tight leading-none"
+                        className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-foreground tracking-tight leading-none"
                     />
                 </div>
 
@@ -101,21 +101,21 @@ export const ContactPage = () => {
 
                     {/* Left: Reach out + email CTA */}
                     <div>
-                        <p className="contact-animate text-sm sm:text-base text-neutral-600 leading-relaxed max-w-md mb-10">
+                        <p className="contact-animate text-sm sm:text-base text-secondary-foreground leading-relaxed max-w-md mb-10">
                             I'm always open to discussing new projects, creative ideas, or opportunities to be part of your vision. Feel free to reach out.
                         </p>
 
                         {/* Email — large CTA */}
                         <div className="contact-animate">
-                            <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-neutral-500 block mb-3">
+                            <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground block mb-3">
                                 Say hello
                             </span>
                             <AnimatedLink
                                 href={GMAIL_COMPOSE_URL}
-                                className="text-2xl sm:text-3xl md:text-4xl font-bold text-neutral-900 tracking-tight py-2"
+                                className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground tracking-tight py-2"
                             >
                                 tuanngdinh.1608
-                                <span className="text-neutral-400">@gmail.com</span>
+                                <span className="text-muted-foreground">@gmail.com</span>
                             </AnimatedLink>
                         </div>
                     </div>
@@ -124,7 +124,7 @@ export const ContactPage = () => {
                     <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row gap-16">
                         {/* Socials */}
                         <div>
-                            <span className="contact-animate text-[10px] font-mono uppercase tracking-[0.3em] text-neutral-500 block mb-6">
+                            <span className="contact-animate text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground block mb-6">
                                 Socials
                             </span>
                             <div className="flex flex-col gap-1">
@@ -132,7 +132,7 @@ export const ContactPage = () => {
                                     <div key={link.name} className="contact-animate">
                                         <AnimatedLink
                                             href={link.href}
-                                            className="text-lg sm:text-xl md:text-2xl font-medium text-neutral-600 hover:text-neutral-900 py-1.5"
+                                            className="text-lg sm:text-xl md:text-2xl font-medium text-secondary-foreground hover:text-foreground py-1.5"
                                         >
                                             {link.name}
                                         </AnimatedLink>
@@ -143,7 +143,7 @@ export const ContactPage = () => {
 
                         {/* Quick Info */}
                         <div>
-                            <span className="contact-animate text-[10px] font-mono uppercase tracking-[0.3em] text-neutral-500 block mb-6">
+                            <span className="contact-animate text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground block mb-6">
                                 Quick Links
                             </span>
                             <div className="flex flex-col gap-1">
@@ -151,7 +151,7 @@ export const ContactPage = () => {
                                     <div key={info.label} className="contact-animate">
                                         <AnimatedLink
                                             href={info.value.startsWith("http") ? info.value : `mailto:${info.value}`}
-                                            className="text-lg sm:text-xl md:text-2xl font-medium text-neutral-600 hover:text-neutral-900 py-1.5"
+                                            className="text-lg sm:text-xl md:text-2xl font-medium text-secondary-foreground hover:text-foreground py-1.5"
                                         >
                                             {info.label}
                                         </AnimatedLink>
@@ -163,14 +163,14 @@ export const ContactPage = () => {
                 </div>
 
                 {/* ── BOTTOM LINE ── */}
-                <div className="contact-line-draw h-px bg-neutral-200 origin-left mt-20 md:mt-32" />
+                <div className="contact-line-draw h-px bg-muted origin-left mt-20 md:mt-32" />
 
                 {/* ── FOOTER ── */}
                 <div className="mt-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <p className="contact-animate text-xs font-mono text-neutral-500 tracking-wide">
+                    <p className="contact-animate text-xs font-mono text-muted-foreground tracking-wide">
                         © {new Date().getFullYear()} Nguyen Dinh Tuan. All rights reserved.
                     </p>
-                    <p className="contact-animate text-xs font-mono text-neutral-500 tracking-wide flex items-center gap-1.5">
+                    <p className="contact-animate text-xs font-mono text-muted-foreground tracking-wide flex items-center gap-1.5">
                         Built with React, GSAP & passion
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     </p>

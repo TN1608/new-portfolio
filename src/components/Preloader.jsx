@@ -155,19 +155,19 @@ export default function Preloader() {
                 ref={orbRef}
                 className="absolute inset-0 z-5 flex items-center justify-center pointer-events-none opacity-20 scale-100"
             >
-                <div className="w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-neutral-100/10 rounded-full blur-[120px] mix-blend-screen" />
+                <div className="w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-secondary/10 rounded-full blur-[120px] mix-blend-screen" />
             </div>
 
             {/* Counter and Progress Line */}
             <div className="absolute bottom-10 left-8 md:bottom-16 md:left-16 right-8 md:right-16 flex flex-col gap-3 z-10">
                 <div
                     ref={counterRef}
-                    className="text-7xl md:text-[8rem] font-black text-white/5 tracking-tighter text-right leading-none"
+                    className="text-7xl md:text-[8rem] font-black text-background/5 tracking-tighter text-right leading-none"
                     style={{ WebkitTextStroke: "1px rgba(255,255,255,0.1)" }}
                 >
                     0%
                 </div>
-                <div className="w-full h-[2px] bg-white/5 relative overflow-hidden rounded-full">
+                <div className="w-full h-[2px] bg-background/5 relative overflow-hidden rounded-full">
                     <div
                         ref={progressRef}
                         className="absolute top-0 left-0 h-full w-full bg-linear-to-r from-neutral-600 via-neutral-300 to-white origin-left scale-x-0 rounded-full"
@@ -178,7 +178,7 @@ export default function Preloader() {
             {/* Center Text Container */}
             <div
                 ref={textContainerRef}
-                className="relative z-10 flex flex-col md:flex-row items-center justify-center gap-2 md:gap-6 text-white p-6"
+                className="relative z-10 flex flex-col md:flex-row items-center justify-center gap-2 md:gap-6 text-background p-6"
             >
                 {/* Wrap each word in overflow-hidden to create the nice reveal mask */}
                 <div className="word-wrapper overflow-hidden pb-4 px-2">

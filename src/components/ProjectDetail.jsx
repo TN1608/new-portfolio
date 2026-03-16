@@ -87,7 +87,7 @@ export function ProjectDetail({ project, open, onOpenChange }) {
                                     href={demoLink}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md text-white text-xs font-mono px-3 py-1.5 rounded-full hover:bg-white/20 transition-colors"
+                                    className="flex items-center gap-1.5 bg-background/10 backdrop-blur-md text-background text-xs font-mono px-3 py-1.5 rounded-full hover:bg-background/20 transition-colors"
                                 >
                                     <ExternalLink className="w-3.5 h-3.5" />
                                     Live Demo
@@ -98,7 +98,7 @@ export function ProjectDetail({ project, open, onOpenChange }) {
                                     href={githubLink}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md text-white text-xs font-mono px-3 py-1.5 rounded-full hover:bg-white/20 transition-colors"
+                                    className="flex items-center gap-1.5 bg-background/10 backdrop-blur-md text-background text-xs font-mono px-3 py-1.5 rounded-full hover:bg-background/20 transition-colors"
                                 >
                                     <Github className="w-3.5 h-3.5" />
                                     Source

@@ -363,7 +363,7 @@ export const SkillsPage = () => {
     }, [])
 
     return (
-        <section ref={sectionRef} id="skills" className="relative h-screen bg-neutral-100 overflow-hidden text-neutral-900">
+        <section ref={sectionRef} id="skills" className="relative h-screen bg-secondary overflow-hidden text-foreground">
 
             {/* 3D CANVAS BACKGROUND */}
             <div className="absolute inset-0 z-10 pointer-events-none">
@@ -401,19 +401,19 @@ export const SkillsPage = () => {
 
                 {/* ── HERO TITLE ── */}
                 <div ref={titleRef} className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 w-full h-full">
-                    <span className="text-xs md:text-sm font-mono tracking-[0.3em] uppercase text-neutral-500 mb-6">
+                    <span className="text-xs md:text-sm font-mono tracking-[0.3em] uppercase text-muted-foreground mb-6">
                         Skills & Expertise
                     </span>
-                    <div className="text-5xl sm:text-7xl md:text-8xl lg:text-[100px] font-black tracking-tighter leading-[0.9] text-neutral-900 drop-shadow-sm">
+                    <div className="text-5xl sm:text-7xl md:text-8xl lg:text-[100px] font-black tracking-tighter leading-[0.9] text-foreground drop-shadow-sm">
                         <BlurText
                             text="Building Digital"
                             delay={30}
-                            className="text-neutral-900"
+                            className="text-foreground"
                         />
                         <BlurText
                             text="Experiences"
                             delay={30}
-                            className="text-neutral-900"
+                            className="text-foreground"
                         />
                     </div>
                 </div>
@@ -430,10 +430,10 @@ export const SkillsPage = () => {
                         {SKILL_CATEGORIES.map((cat, idx) => (
                             <div key={idx} className="skill-category-item absolute inset-0 flex flex-col items-center justify-center opacity-0">
                                 {/* Category Title */}
-                                <h3 className="cat-title text-sm md:text-base font-mono uppercase tracking-widest font-bold text-neutral-900 mb-8 flex items-center gap-3">
-                                    <span className="w-8 h-[2px] bg-neutral-900" />
+                                <h3 className="cat-title text-sm md:text-base font-mono uppercase tracking-widest font-bold text-foreground mb-8 flex items-center gap-3">
+                                    <span className="w-8 h-[2px] bg-foreground" />
                                     {cat.title}
-                                    <span className="w-8 h-[2px] bg-neutral-900" />
+                                    <span className="w-8 h-[2px] bg-foreground" />
                                 </h3>
 
                                 {/* Skill Tags (Flex layout to prevent messy overlapping, but animated dynamically) */}
@@ -496,22 +496,22 @@ export const SkillsPage = () => {
                             return (
                                 <div key={idx} className={`xp-item relative transition-colors duration-500 ${isCurvedAlign ? "pl-14" : "pl-8"}`}>
                                     {/* Timeline Dot */}
-                                    <div className={`xp-dot absolute top-1.5 w-4 h-4 rounded-full bg-neutral-100 border-2 border-neutral-900 opacity-0 ${isCurvedAlign ? "left-[24px]" : "left-[4px]"}`} />
+                                    <div className={`xp-dot absolute top-1.5 w-4 h-4 rounded-full bg-secondary border-2 border-neutral-900 opacity-0 ${isCurvedAlign ? "left-[24px]" : "left-[4px]"}`} />
 
-                                    <span className="text-xs font-mono font-bold text-neutral-500 mb-1 block">
+                                    <span className="text-xs font-mono font-bold text-muted-foreground mb-1 block">
                                         {xp.period}
                                     </span>
-                                    <h3 className="text-2xl md:text-4xl font-black text-neutral-900 tracking-tight leading-none mb-2">
+                                    <h3 className="text-2xl md:text-4xl font-black text-foreground tracking-tight leading-none mb-2">
                                         {xp.company}
                                     </h3>
-                                    <h4 className="text-lg md:text-xl font-bold text-neutral-500 mb-4">
+                                    <h4 className="text-lg md:text-xl font-bold text-muted-foreground mb-4">
                                         {xp.role}
                                     </h4>
 
                                     <ul className="space-y-2">
                                         {xp.highlights.map((hlt, i) => (
-                                            <li key={i} className="flex items-start gap-3 text-neutral-600 font-medium text-sm md:text-base">
-                                                <span className="text-neutral-300 mt-1 shrink-0">▸</span>
+                                            <li key={i} className="flex items-start gap-3 text-secondary-foreground font-medium text-sm md:text-base">
+                                                <span className="text-muted mt-1 shrink-0">▸</span>
                                                 {hlt}
                                             </li>
                                         ))}
@@ -547,10 +547,10 @@ export const SkillsPage = () => {
 
                             return (
                                 <div key={i} className="stat-item flex flex-col items-center text-center">
-                                    <span className="text-3xl md:text-4xl lg:text-5xl font-black text-neutral-900 tracking-tighter mb-2 font-mono flex items-center">
+                                    <span className="text-3xl md:text-4xl lg:text-5xl font-black text-foreground tracking-tighter mb-2 font-mono flex items-center">
                                         {content}
                                     </span>
-                                    <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500">
+                                    <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                                         {stat.label}
                                     </span>
                                 </div>

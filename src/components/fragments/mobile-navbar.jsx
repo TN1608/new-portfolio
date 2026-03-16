@@ -112,16 +112,16 @@ export const MobileNavbar = ({ links = [], onNavigate, hidden = false }) => {
                 className={`relative z-200 w-10 h-10 flex flex-col items-center justify-center gap-[5px] group transition-opacity duration-300 ${hidden && !isOpen ? "pointer-events-none opacity-0" : "opacity-100"}`}
                 aria-label="Toggle menu"
             >
-                <span className={`w-6 h-[1.5px] bg-white/70 transition-all duration-300 ease-in-out origin-center ${isOpen ? "rotate-45 translate-y-[3.25px]" : "group-hover:w-5"
+                <span className={`w-6 h-[1.5px] bg-background/70 transition-all duration-300 ease-in-out origin-center ${isOpen ? "rotate-45 translate-y-[3.25px]" : "group-hover:w-5"
                     }`} />
-                <span className={`w-6 h-[1.5px] bg-white/70 transition-all duration-300 ease-in-out origin-center ${isOpen ? "-rotate-45 -translate-y-[3.25px]" : "group-hover:w-4"
+                <span className={`w-6 h-[1.5px] bg-background/70 transition-all duration-300 ease-in-out origin-center ${isOpen ? "-rotate-45 -translate-y-[3.25px]" : "group-hover:w-4"
                     }`} />
             </button>
 
             {/* ── FULLSCREEN OVERLAY ── */}
             <div
                 ref={overlayRef}
-                className="fixed inset-0 z-190 bg-black/60 backdrop-blur-md invisible opacity-0"
+                className="fixed inset-0 z-190 bg-foreground/60 backdrop-blur-md invisible opacity-0"
                 onClick={() => setIsOpen(false)}
             />
 
@@ -147,10 +147,10 @@ export const MobileNavbar = ({ links = [], onNavigate, hidden = false }) => {
             >
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 pt-5 pb-2 shrink-0">
-                    <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30">
+                    <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-background/30">
                         Navigation
                     </span>
-                    <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/20">
+                    <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-background/20">
                         Menu
                     </span>
                 </div>
@@ -170,15 +170,15 @@ export const MobileNavbar = ({ links = [], onNavigate, hidden = false }) => {
                             >
                                 <div className="flex items-baseline gap-3">
                                     {/* Index Number */}
-                                    <span className="text-[11px] font-mono text-white/20 tabular-nums">
+                                    <span className="text-[11px] font-mono text-background/20 tabular-nums">
                                         {String(i + 1).padStart(2, "0")}
                                     </span>
 
                                     {/* ── AWWWARDS TEXT ROLL ── */}
                                     <TextRoll
                                         text={link.label}
-                                        className="text-3xl sm:text-4xl font-black text-white/80 tracking-tight leading-none"
-                                        hoverClassName="text-3xl sm:text-4xl font-black text-white tracking-tight leading-none"
+                                        className="text-3xl sm:text-4xl font-black text-background/80 tracking-tight leading-none"
+                                        hoverClassName="text-3xl sm:text-4xl font-black text-background tracking-tight leading-none"
                                         charSplit={true}
                                         staggerMs={15}
                                     />
@@ -188,7 +188,7 @@ export const MobileNavbar = ({ links = [], onNavigate, hidden = false }) => {
                             {i < links.length - 1 && (
                                 <div
                                     ref={(el) => (lineRefs.current[i] = el)}
-                                    className="h-px bg-white/8 origin-left scale-x-0"
+                                    className="h-px bg-background/8 origin-left scale-x-0"
                                 />
                             )}
                         </div>
@@ -197,24 +197,24 @@ export const MobileNavbar = ({ links = [], onNavigate, hidden = false }) => {
 
                 {/* Footer info */}
                 <div ref={footerRef} className="px-6 pb-8 shrink-0 opacity-0">
-                    <div className="h-px bg-white/8 mb-5" />
+                    <div className="h-px bg-background/8 mb-5" />
                     <div className="flex flex-col gap-3">
                         <div>
-                            <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30 mb-1">
+                            <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-background/30 mb-1">
                                 Get in touch
                             </p>
                             <a
                                 href="https://mail.google.com/mail/?view=cm&to=tuanngdinh.1608@gmail.com&su=Collaboration+Inquiry+%E2%80%93+From+Your+Portfolio&body=Hi+Tuan%2C%0A%0AI+came+across+your+portfolio+and+was+impressed+by+your+work.+I%E2%80%99d+love+to+discuss+a+potential+opportunity.%0A%0ABest+regards%2C%0A%5BYour+Name%5D"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-sm text-white/60 hover:text-white transition-colors duration-300"
+                                className="text-sm text-background/60 hover:text-background transition-colors duration-300"
                             >
                                 tuanngdinh.1608@gmail.com
                             </a>
                         </div>
                         <div className="flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            <span className="text-[10px] font-mono text-white/30 uppercase tracking-wider">
+                            <span className="text-[10px] font-mono text-background/30 uppercase tracking-wider">
                                 Open to work
                             </span>
                         </div>

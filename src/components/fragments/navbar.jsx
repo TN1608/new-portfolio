@@ -120,7 +120,7 @@ export const Navbar = () => {
         <nav
             ref={navRef}
             className={`fixed top-0 left-0 right-0 z-100 transition-[backdrop-filter,background] duration-500 ${scrolled
-                ? "bg-black/60 backdrop-blur-xl shadow-[0_1px_0_rgba(255,255,255,0.05)]"
+                ? "bg-foreground/60 backdrop-blur-xl shadow-[0_1px_0_rgba(255,255,255,0.05)]"
                 : "bg-transparent"
                 }`}
         >
@@ -135,9 +135,9 @@ export const Navbar = () => {
                         className="relative flex items-center gap-2 opacity-0 group"
                     >
                         <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center group-hover:border-white/50 transition-colors duration-300">
-                            <span className="text-[11px] font-bold text-white/80 font-mono group-hover:text-white transition-colors duration-300">T</span>
+                            <span className="text-[11px] font-bold text-background/80 font-mono group-hover:text-background transition-colors duration-300">T</span>
                         </div>
-                        <span className="text-sm font-medium text-white/70 tracking-wide font-mono hidden sm:block group-hover:text-white transition-colors duration-300">
+                        <span className="text-sm font-medium text-background/70 tracking-wide font-mono hidden sm:block group-hover:text-background transition-colors duration-300">
                             TUAN.DEV
                         </span>
                     </a>
@@ -150,17 +150,17 @@ export const Navbar = () => {
                                 ref={(el) => (linksRef.current[i] = el)}
                                 href={link.href}
                                 onClick={(e) => handleNavClick(e, link.href)}
-                                className="relative px-4 py-2 text-[13px] font-medium text-white/60 tracking-wide uppercase overflow-hidden group hover:text-white transition-colors duration-300"
+                                className="relative px-4 py-2 text-[13px] font-medium text-background/60 tracking-wide uppercase overflow-hidden group hover:text-background transition-colors duration-300"
                             >
                                 <TextRoll
                                     text={link.label}
-                                    className="text-[13px] font-medium text-white/60 tracking-wide uppercase"
-                                    hoverClassName="text-[13px] font-medium text-white tracking-wide uppercase"
+                                    className="text-[13px] font-medium text-background/60 tracking-wide uppercase"
+                                    hoverClassName="text-[13px] font-medium text-background tracking-wide uppercase"
                                     charSplit={false}
                                     staggerMs={30}
                                 />
                                 {/* Hover underline */}
-                                <span className="absolute bottom-1 left-4 right-4 h-px bg-white/40 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-in-out" />
+                                <span className="absolute bottom-1 left-4 right-4 h-px bg-background/40 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-in-out" />
                             </a>
                         ))}
                     </div>
@@ -171,7 +171,7 @@ export const Navbar = () => {
                             href="https://mail.google.com/mail/?view=cm&to=tuanngdinh.1608@gmail.com&su=Collaboration+Inquiry+%E2%80%93+From+Your+Portfolio&body=Hi+Tuan%2C%0A%0AI+came+across+your+portfolio+and+was+impressed+by+your+work.+I%E2%80%99d+love+to+discuss+a+potential+opportunity.%0A%0ABest+regards%2C%0A%5BYour+Name%5D"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[11px] font-mono uppercase tracking-[0.2em] text-white/50 border border-white/15 rounded-full px-5 py-2 hover:bg-white/10 hover:text-white hover:border-white/30 transition-all duration-300"
+                            className="text-[11px] font-mono uppercase tracking-[0.2em] text-background/50 border border-white/15 rounded-full px-5 py-2 hover:bg-background/10 hover:text-background hover:border-white/30 transition-all duration-300"
                         >
                             Available for work
                         </a>

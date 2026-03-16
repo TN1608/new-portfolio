@@ -86,10 +86,10 @@ export function ScrollProgress() {
         >
             {/* Percent */}
             <div className="mb-3 text-right">
-                <span className="text-[10px] font-mono text-white/30 tracking-widest block">
+                <span className="text-[10px] font-mono text-background/30 tracking-widest block">
                     SCROLL
                 </span>
-                <span className="text-xs font-mono text-white/60 tabular-nums">
+                <span className="text-xs font-mono text-background/60 tabular-nums">
                     {String(scrollPercent).padStart(3, "0")}%
                 </span>
             </div>
@@ -109,8 +109,8 @@ export function ScrollProgress() {
                             {/* Label */}
                             <span
                                 className={`text-[10px] uppercase tracking-[0.2em] font-mono transition-all duration-500 ${isActive
-                                    ? "text-white opacity-100 translate-x-0"
-                                    : "text-white/30 opacity-70 translate-x-1 group-hover:text-white/60 group-hover:translate-x-0"
+                                    ? "text-background opacity-100 translate-x-0"
+                                    : "text-background/30 opacity-70 translate-x-1 group-hover:text-background/60 group-hover:translate-x-0"
                                     }`}
                             >
                                 {section.label}
@@ -120,10 +120,10 @@ export function ScrollProgress() {
                             <div className="relative flex flex-col items-center">
                                 <div
                                     className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${isActive
-                                        ? "bg-white scale-150 shadow-[0_0_8px_rgba(255,255,255,0.4)]"
+                                        ? "bg-background scale-150 shadow-[0_0_8px_rgba(255,255,255,0.4)]"
                                         : isPast
-                                            ? "bg-white/40 scale-100"
-                                            : "bg-white/15 scale-100 group-hover:bg-white/30"
+                                            ? "bg-background/40 scale-100"
+                                            : "bg-background/15 scale-100 group-hover:bg-background/30"
                                         }`}
                                 />
                             </div>
@@ -132,9 +132,9 @@ export function ScrollProgress() {
                 })}
 
                 {/* Vertical progress track */}
-                <div className="absolute right-[2.5px] top-[10px] bottom-[10px] w-px bg-white/6">
+                <div className="absolute right-[2.5px] top-[10px] bottom-[10px] w-px bg-background/6">
                     <div
-                        className="w-full bg-white/30 origin-top transition-all duration-700 ease-out"
+                        className="w-full bg-background/30 origin-top transition-all duration-700 ease-out"
                         style={{ height: `${(activeIndex / (SECTIONS.length - 1)) * 100}%` }}
                     />
                 </div>

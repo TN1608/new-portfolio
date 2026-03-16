@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils.js"
  *
  * Usage:
  *   <a className="group">
- *     <TextRoll text="Projects" className="text-3xl font-bold text-white/80" />
+ *     <TextRoll text="Projects" className="text-3xl font-bold text-background/80" />
  *   </a>
  */
 export const TextRoll = ({
