@@ -22,11 +22,13 @@ const MonitorScene = ({ isDetailActive, project }) => {
     useEffect(() => {
         if (!monitorRef.current) return;
 
+        const isMobile = window.innerWidth < 1024;
+
         if (isDetailActive) {
-            // Zoom in: camera-like zoom toward monitor — smooth cinematic
+            // Detail state: Zoom in to the screen
             gsap.to(monitorRef.current.position, {
                 x: 0,
-                y: 0,
+                y: -1,
                 z: 11.5,
                 duration: 1.2,
                 ease: "power4.inOut"
@@ -39,11 +41,10 @@ const MonitorScene = ({ isDetailActive, project }) => {
                 ease: "power4.inOut"
             })
         } else {
-            // Idle: subtle positioning
-            const isMobile = window.innerWidth < 1024;
+            // Idle state: Move monitor to the Left side and position lower than before
             gsap.to(monitorRef.current.position, {
                 x: isMobile ? 0 : -5,
-                y: isMobile ? 2 : 0,
+                y: isMobile ? 0 : -2, // Moved lower
                 z: isMobile ? -5 : 0,
                 duration: 1.2,
                 ease: "power4.inOut"
@@ -59,7 +60,7 @@ const MonitorScene = ({ isDetailActive, project }) => {
     }, [isDetailActive])
 
     return (
-        <group ref={monitorRef} position={[-5, 0, 0]} rotation={[0.1, 0.4, -0.05]} scale={0.02}>
+        <group ref={monitorRef} position={[-4, -2, 0]} rotation={[0.1, 0.4, -0.05]} scale={0.02}>
             {/* Always pass the hovered/active project image so the screen updates immediately */}
             <CrtMonitor image={project?.image} />
         </group>
@@ -180,7 +181,7 @@ export const ProjectsPage = () => {
     const currentDemo = currentProject?.links?.demo || currentProject?.demo || ""
     const currentGithub = currentProject?.links?.github || currentProject?.github || ""
 
-    // ── OPEN DETAIL (in-section, not overlay) ──
+    // ── OPEN DETAIL (Centered Overlay layout) ──
     const openDetail = useCallback((project) => {
         if (isAnimating) return
         setIsAnimating(true)
@@ -197,20 +198,23 @@ export const ProjectsPage = () => {
             onComplete: () => gsap.set(listView, { display: "none" })
         }, 0)
 
-        // Fade out the 3D Canvas smoothly while the camera zooms in
-        tl.to(".canvas-container", {
-            opacity: 0, duration: 1, ease: "power2.inOut"
-        }, 0.2)
+        // Show centered detail view but keep opacity 0
+        tl.set(detailView, { display: "flex", pointerEvents: "auto" }, 0.4)
+        tl.set(detailView, { opacity: 0 }, 0.4)
 
-        // Show and fade in centered detail view
-        tl.set(detailView, { display: "flex" }, 0.4)
-        tl.fromTo(detailView, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 0.4)
+        // Fade out the 3D Canvas smoothly AFTER the camera zooms in (zoom takes 1.2s)
+        tl.to(".canvas-container", {
+            opacity: 0, duration: 0.5, ease: "power2.inOut"
+        }, 1.0) // Start fading out as zoom finishes
+
+        // Fade in detail view
+        tl.to(detailView, { opacity: 1, duration: 0.6, ease: "power2.out" }, 1.0)
 
         // Slide up the center card
         tl.fromTo(".detail-content",
             { opacity: 0, y: 80, scale: 0.95 },
             { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "power4.out" },
-            0.6
+            1.2
         )
     }, [isAnimating])
 
@@ -226,19 +230,19 @@ export const ProjectsPage = () => {
             onComplete: () => {
                 setSelectedProject(null)
                 setIsAnimating(false)
-                gsap.set(detailView, { display: "none" })
+                gsap.set(detailView, { display: "none", pointerEvents: "none" })
             }
         })
 
         tl.to(".detail-content", { opacity: 0, y: 40, scale: 0.95, duration: 0.3, ease: "power2.inOut" }, 0)
         tl.to(detailView, { opacity: 0, duration: 0.3, ease: "power2.inOut" }, 0.1)
 
-        // Fade the 3D Canvas back in
-        tl.to(".canvas-container", { opacity: 1, duration: 0.8, ease: "power2.inOut" }, 0.2)
-
         // Bring back the list
         tl.set(listView, { display: "flex" }, 0.3)
         tl.to(listView, { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: "power4.out" }, 0.3)
+
+        // Fade the 3D Canvas back in immediately so we see it zoom out
+        tl.to(".canvas-container", { opacity: 1, duration: 0.5, ease: "power2.inOut" }, 0.2)
     }, [isAnimating, selectedProject])
 
     // Escape key
@@ -502,7 +506,7 @@ export const ProjectsPage = () => {
                             </div>
                         </div>
                     </div>
-                </div >
+                </div>
             </section >
         </div >
     )
