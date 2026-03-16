@@ -20,6 +20,10 @@ export function ScrollProgress() {
     const [scrollPercent, setScrollPercent] = useState(0)
     const [isHidden, setIsHidden] = useState(false)
     const triggersRef = useRef([])
+    
+    // Transition refs
+    const isTransitioning = useRef(false)
+    const barsRef = useRef([])
 
     useEffect(() => {
         // Track overall scroll progress
@@ -33,9 +37,7 @@ export function ScrollProgress() {
         window.addEventListener("scroll", updateProgress, { passive: true })
         updateProgress()
 
-        // Delay trigger creation so that all other ScrollTriggers (especially
-        // the Projects section pin) are created first.  GSAP's `ScrollTrigger.refresh()`
-        // then recalculates every trigger with the correct pin-spacing offsets.
+        // Delay trigger creation
         const delayedSetup = gsap.delayedCall(0.5, () => {
             ScrollTrigger.refresh()
 
@@ -47,13 +49,14 @@ export function ScrollProgress() {
                     trigger: el,
                     start: "top center",
                     end: "bottom center",
-                    // Lower priority so it refreshes AFTER the Projects pin
                     refreshPriority: -10,
                     onEnter: () => {
+                        if (isTransitioning.current) return;
                         setActiveIndex(i)
                         setIsHidden(section.id === "projects")
                     },
                     onEnterBack: () => {
+                        if (isTransitioning.current) return;
                         setActiveIndex(i)
                         setIsHidden(section.id === "projects")
                     },
@@ -71,74 +74,127 @@ export function ScrollProgress() {
         }
     }, [])
 
-    const handleClick = (id) => {
-        const el = document.getElementById(id)
-        if (el) {
-            el.scrollIntoView({ behavior: "smooth" })
-        }
+    const handleClick = (id, index) => {
+        if (isTransitioning.current) return
+        const target = document.getElementById(id)
+        if (!target) return
+
+        isTransitioning.current = true
+        setActiveIndex(index) // Optimistic update
+        setIsHidden(id === "projects")
+
+        const tl = gsap.timeline({
+            onComplete: () => { isTransitioning.current = false }
+        })
+
+        // 1. Drop curtains to cover screen
+        tl.fromTo(barsRef.current, {
+            yPercent: (i) => i % 2 === 0 ? -110 : 110,
+            display: "block"
+        }, {
+            yPercent: 0,
+            duration: 0.8,
+            ease: "power4.inOut",
+            stagger: 0.06
+        })
+
+        // 2. Instant scroll when fully covered
+        tl.call(() => {
+            if (window.__lenis) {
+                window.__lenis.scrollTo(target, { immediate: true })
+            } else {
+                target.scrollIntoView()
+            }
+        })
+
+        // 3. Small pause, then lift curtains
+        tl.to(barsRef.current, {
+            yPercent: (i) => i % 2 === 0 ? -110 : 110,
+            duration: 0.8,
+            ease: "power4.inOut",
+            stagger: 0.06,
+            delay: 0.2, // brief moment of black
+            onComplete: () => {
+                gsap.set(barsRef.current, { display: "none" })
+            }
+        })
     }
 
     return (
-        <div
-            ref={containerRef}
-            className={`fixed right-6 top-1/2 -translate-y-1/2 z-50 hidden md:flex flex-col items-end gap-1 mix-blend-difference transition-all duration-500 ${isHidden ? "opacity-0 pointer-events-none translate-x-4" : "opacity-100 translate-x-0"
-                }`}
-        >
-            {/* Percent */}
-            <div className="mb-3 text-right">
-                <span className="text-[10px] font-mono text-background/30 tracking-widest block">
-                    SCROLL
-                </span>
-                <span className="text-xs font-mono text-background/60 tabular-nums">
-                    {String(scrollPercent).padStart(3, "0")}%
-                </span>
+        <>
+            {/* ── CURTAIN TRANSITION BARS ── */}
+            <div className="fixed inset-0 z-[300] pointer-events-none flex w-full h-full">
+                {[...Array(5)].map((_, i) => (
+                    <div
+                        key={`bar-${i}`}
+                        ref={(el) => (barsRef.current[i] = el)}
+                        className="h-full flex-1 -ml-px first:ml-0"
+                        style={{ background: "#0a0a0a", display: "none" }}
+                    />
+                ))}
             </div>
 
-            {/* Progress line + dots */}
-            <div className="relative flex flex-col items-end gap-0">
-                {SECTIONS.map((section, i) => {
-                    const isActive = i === activeIndex
-                    const isPast = i < activeIndex
+            <div
+                ref={containerRef}
+                className={`fixed right-6 top-1/2 -translate-y-1/2 z-50 hidden md:flex flex-col items-end gap-1 mix-blend-difference transition-all duration-500 ${isHidden ? "opacity-0 pointer-events-none translate-x-4" : "opacity-100 translate-x-0"
+                    }`}
+            >
+                {/* Percent */}
+                <div className="mb-3 text-right">
+                    <span className="text-[10px] font-mono text-background/30 tracking-widest block">
+                        SCROLL
+                    </span>
+                    <span className="text-xs font-mono text-background/60 tabular-nums">
+                        {String(scrollPercent).padStart(3, "0")}%
+                    </span>
+                </div>
 
-                    return (
-                        <button
-                            key={section.id}
-                            onClick={() => handleClick(section.id)}
-                            className="group relative flex items-center gap-3 py-2 cursor-pointer"
-                        >
-                            {/* Label */}
-                            <span
-                                className={`text-[10px] uppercase tracking-[0.2em] font-mono transition-all duration-500 ${isActive
-                                    ? "text-background opacity-100 translate-x-0"
-                                    : "text-background/30 opacity-70 translate-x-1 group-hover:text-background/60 group-hover:translate-x-0"
-                                    }`}
+                {/* Progress line + dots */}
+                <div className="relative flex flex-col items-end gap-0">
+                    {SECTIONS.map((section, i) => {
+                        const isActive = i === activeIndex
+                        const isPast = i < activeIndex
+
+                        return (
+                            <button
+                                key={section.id}
+                                onClick={() => handleClick(section.id, i)}
+                                className="group relative flex items-center gap-3 py-2 cursor-pointer"
                             >
-                                {section.label}
-                            </span>
-
-                            {/* Dot */}
-                            <div className="relative flex flex-col items-center">
-                                <div
-                                    className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${isActive
-                                        ? "bg-background scale-150 shadow-[0_0_8px_rgba(255,255,255,0.4)]"
-                                        : isPast
-                                            ? "bg-background/40 scale-100"
-                                            : "bg-background/15 scale-100 group-hover:bg-background/30"
+                                {/* Label */}
+                                <span
+                                    className={`text-[10px] uppercase tracking-[0.2em] font-mono transition-all duration-500 ${isActive
+                                        ? "text-background opacity-100 translate-x-0"
+                                        : "text-background/30 opacity-70 translate-x-1 group-hover:text-background/60 group-hover:translate-x-0"
                                         }`}
-                                />
-                            </div>
-                        </button>
-                    )
-                })}
+                                >
+                                    {section.label}
+                                </span>
 
-                {/* Vertical progress track */}
-                <div className="absolute right-[2.5px] top-[10px] bottom-[10px] w-px bg-background/6">
-                    <div
-                        className="w-full bg-background/30 origin-top transition-all duration-700 ease-out"
-                        style={{ height: `${(activeIndex / (SECTIONS.length - 1)) * 100}%` }}
-                    />
+                                {/* Dot */}
+                                <div className="relative flex flex-col items-center">
+                                    <div
+                                        className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${isActive
+                                            ? "bg-background scale-150 shadow-[0_0_8px_rgba(255,255,255,0.4)]"
+                                            : isPast
+                                                ? "bg-background/40 scale-100"
+                                                : "bg-background/15 scale-100 group-hover:bg-background/30"
+                                            }`}
+                                    />
+                                </div>
+                            </button>
+                        )
+                    })}
+
+                    {/* Vertical progress track */}
+                    <div className="absolute right-[2.5px] top-[10px] bottom-[10px] w-px bg-background/6">
+                        <div
+                            className="w-full bg-background/30 origin-top transition-all duration-700 ease-out"
+                            style={{ height: `${(activeIndex / (SECTIONS.length - 1)) * 100}%` }}
+                        />
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     )
 }

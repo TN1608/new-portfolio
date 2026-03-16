@@ -109,16 +109,17 @@ export const ProjectsPage = () => {
                 }
             })
 
-            // Title parallax and fade out
-            tl.to(".transition-title", {
-                y: -150,
+            // Title wave, zoom, and fade out
+            tl.to(".transition-char", {
+                y: (i) => Math.sin(i * 0.5) * -100 - 150,
                 opacity: 0,
-                scale: 1.2,
+                scale: 2.5,
+                stagger: 0.02,
                 ease: "power2.inOut",
-                duration: 1
+                duration: 1.2
             }, 0)
 
-            // Advanced Image Parallax Reveal Animation (Skiper71 style)
+            // Zoom Reveal Animation for Images
             const wrappers = gsap.utils.toArray(".transition-img-wrapper")
             const images = gsap.utils.toArray(".transition-img")
 
@@ -126,39 +127,42 @@ export const ProjectsPage = () => {
                 const img = images[i]
                 const speed = 1 + (i * 0.3)
 
-                // Set initial states: wrapper is clipped from the bottom, image is scaled up
+                // Set initial states: wrapper is tiny/hidden, image is scaled up
                 gsap.set(wrapper, {
+                    scale: 0.2,
+                    opacity: 0,
                     y: 100 + (50 * i),
-                    clipPath: "inset(100% 0% 0% 0%)",
-                    rotation: i % 2 === 0 ? -5 : 5
+                    rotation: i % 2 === 0 ? -15 : 15
                 })
                 gsap.set(img, {
-                    scale: 1.6
+                    scale: 2
                 })
 
-                // Reveal wrappers (unclip + move up + straighten)
+                // Reveal wrappers (zoom in + move up + straighten)
                 tl.to(wrapper, {
+                    scale: 1,
+                    opacity: 1,
                     y: -50 * speed,
-                    clipPath: "inset(0% 0% 0% 0%)",
                     rotation: i % 2 === 0 ? 3 : -3,
-                    ease: "power3.inOut",
+                    ease: "back.out(1.2)",
                     duration: 1.5
-                }, i * 0.15) // Stagger 
+                }, i * 0.15) 
 
-                // Parallax scale down the image inside the wrapper simultaneously
+                // Parallax scale down the image inside
                 tl.to(img, {
                     scale: 1,
                     ease: "power3.inOut",
                     duration: 1.5
                 }, i * 0.15)
 
-                // Fade/Move them out at the very end to reveal the Projects List
+                // Zoom PAST them aggressively into the Projects List
                 tl.to(wrapper, {
                     opacity: 0,
-                    y: -150 * speed,
+                    scale: 4, 
+                    y: -300 * speed,
                     ease: "power2.in",
-                    duration: 0.6
-                }, 1.6 + (i * 0.1))
+                    duration: 0.8
+                }, 1.4 + (i * 0.1))
             })
 
             // Reveal Showcase Section (Projects List)
@@ -261,8 +265,10 @@ export const ProjectsPage = () => {
                 className="relative h-screen w-full overflow-hidden flex items-center justify-center bg-white"
             >
                 <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10">
-                    <h2 className="transition-title text-[12vw] font-black text-neutral-900 tracking-tighter leading-none text-center">
-                        SELECTED<br />WORKS
+                    <h2 className="text-[12vw] font-black text-neutral-900 tracking-tighter leading-none text-center" style={{ perspective: "1000px" }}>
+                        {"SELECTED".split("").map((c, i) => <span key={`sel-${i}`} className="transition-char inline-block" style={{ transformStyle: "preserve-3d" }}>{c}</span>)}
+                        <br />
+                        {"WORKS".split("").map((c, i) => <span key={`wor-${i}`} className="transition-char inline-block" style={{ transformStyle: "preserve-3d" }}>{c}</span>)}
                     </h2>
                 </div>
 
