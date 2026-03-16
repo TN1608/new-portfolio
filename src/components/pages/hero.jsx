@@ -21,6 +21,10 @@ export const Hero = forwardRef((props, ref) => {
     const textSolidlayerRef = useRef(null)
     const badgeRef = useRef(null)
 
+    // Transition refs
+    const isTransitioning = useRef(false)
+    const barsRef = useRef([])
+
     useEffect(() => {
         const ctx = gsap.context(() => {
             // ── MAIN MOUNT TIMELINE ──
@@ -153,6 +157,51 @@ export const Hero = forwardRef((props, ref) => {
         return () => ctx.revert()
     }, [])
 
+    // ── NAVIGATION TRANSITION ──
+    const handleNavigate = (id) => {
+        if (isTransitioning.current) return
+        const target = document.getElementById(id)
+        if (!target) return
+
+        isTransitioning.current = true
+
+        const tl = gsap.timeline({
+            onComplete: () => { isTransitioning.current = false }
+        })
+
+        // 1. Drop curtains to cover screen
+        tl.fromTo(barsRef.current, {
+            yPercent: (i) => i % 2 === 0 ? -110 : 110,
+            display: "block"
+        }, {
+            yPercent: 0,
+            duration: 0.8,
+            ease: "power4.inOut",
+            stagger: 0.06
+        })
+
+        // 2. Instant scroll when fully covered
+        tl.call(() => {
+            if (window.__lenis) {
+                window.__lenis.scrollTo(target, { immediate: true })
+            } else {
+                target.scrollIntoView()
+            }
+        })
+
+        // 3. Lift curtains
+        tl.to(barsRef.current, {
+            yPercent: (i) => i % 2 === 0 ? -110 : 110,
+            duration: 0.8,
+            ease: "power4.inOut",
+            stagger: 0.06,
+            delay: 0.2, // brief moment of solid cover
+            onComplete: () => {
+                gsap.set(barsRef.current, { display: "none" })
+            }
+        })
+    }
+
     // Text split helper
     const text = "DIGITAL\nEXPERIENCES"
     const words = text.split("\n")
@@ -167,6 +216,18 @@ export const Hero = forwardRef((props, ref) => {
             id="hero"
             className="relative h-screen w-full flex items-center justify-center overflow-hidden bg-[#050505]"
         >
+            {/* ── CURTAIN TRANSITION BARS ── */}
+            <div className="fixed inset-0 z-[300] pointer-events-none flex w-full h-full">
+                {[...Array(5)].map((_, i) => (
+                    <div
+                        key={`hero-bar-${i}`}
+                        ref={(el) => (barsRef.current[i] = el)}
+                        className="h-full flex-1 -ml-px first:ml-0"
+                        style={{ background: "#0a0a0a", display: "none" }}
+                    />
+                ))}
+            </div>
+
             {/* ── BACKGROUND IMAGE WRAPPER ── */}
             <div
                 ref={bgWrapperRef}
@@ -188,10 +249,22 @@ export const Hero = forwardRef((props, ref) => {
             {/* ── MAIN CONTENT ── */}
             <div className="container relative z-20 px-4 md:px-12 flex flex-col items-center justify-center h-full text-center mt-12">
 
-                {/* Badge */}
-                <div ref={badgeRef} className="mb-6 opacity-0">
+                {/* Profile & Role Info */}
+                <div ref={badgeRef} className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 mb-8 opacity-0">
+                    <div className="flex items-center gap-3 bg-white/5 pr-5 p-1.5 rounded-full border border-white/10 backdrop-blur-md">
+                        <div className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center text-lg font-black font-mono">
+                            T
+                        </div>
+                        <div className="flex flex-col items-start text-left">
+                            <span className="text-white font-bold text-sm tracking-wide leading-tight">Tuan Nguyen</span>
+                            <span className="text-white/50 text-[10px] uppercase tracking-widest font-mono mt-0.5">Frontend Developer</span>
+                        </div>
+                    </div>
+
+                    <div className="hidden sm:block w-1.5 h-1.5 rounded-full bg-white/20" />
+
                     <RotatingText
-                        texts={["Frontend-Focused Full-Stack Developer", "UI/UX Enthusiast", "Creative Developer"]}
+                        texts={["UI/UX Enthusiast", "Creative Developer", "Full-Stack Capable"]}
                         mainClassName="px-5 py-2.5 rounded-full text-xs md:text-sm font-semibold bg-white/10 text-white overflow-hidden justify-center border border-white/20 backdrop-blur-md"
                         staggerFrom={"last"}
                         initial={{ y: "100%" }}
@@ -269,7 +342,7 @@ export const Hero = forwardRef((props, ref) => {
                     <Button
                         size="lg"
                         className="group px-8 py-6 text-sm font-bold tracking-wide uppercase rounded-full bg-white text-black hover:bg-white/90 transition-all duration-300"
-                        onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })}
+                        onClick={() => handleNavigate('projects')}
                     >
                         View My Work
                         <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
@@ -280,7 +353,7 @@ export const Hero = forwardRef((props, ref) => {
                 <div
                     ref={scrollIndicatorRef}
                     className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 text-white/50 cursor-pointer"
-                    onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })}
+                    onClick={() => handleNavigate('projects')}
                 >
                     <span className="text-[10px] font-mono uppercase tracking-[0.4em]">Scroll</span>
                     <ArrowDown className="w-4 h-4" />
