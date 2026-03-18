@@ -25,18 +25,18 @@ const MonitorScene = ({ isDetailActive, project }) => {
         const isMobile = window.innerWidth < 1024;
 
         if (isDetailActive) {
-            // Detail state: Zoom in to the screen
+            // Detail state: Monitor shifts slightly off-center but remains visible on the left
             gsap.to(monitorRef.current.position, {
-                x: 0,
-                y: -1,
-                z: 11.5,
+                x: isMobile ? 0 : -5.5,
+                y: isMobile ? 0 : -1.5,
+                z: isMobile ? 11.5 : 2,
                 duration: 1.2,
                 ease: "power4.inOut"
             })
             gsap.to(monitorRef.current.rotation, {
-                x: 0,
-                y: 0,
-                z: 0,
+                x: 0.05,
+                y: 0.6,
+                z: -0.02,
                 duration: 1.2,
                 ease: "power4.inOut"
             })
@@ -159,12 +159,60 @@ export const ProjectsPage = () => {
                     duration: 0.8
                 }, 1.4 + (i * 0.1))
             })
-
-            // Reveal Showcase Section (Projects List)
-            tl.fromTo(showcaseRef.current,
-                { opacity: 0, y: 150 },
-                { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, 1.8)
         }, mainRef)
+        return () => ctx.revert()
+    }, [])
+
+    // ── SCROLL ANIMATIONS (Projects Section Entrance/Exit) ──
+    useEffect(() => {
+        const ctx = gsap.context(() => {
+            const isMobile = window.innerWidth < 1024;
+
+            // Single synchronized timeline for both Entrance and Exit
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: showcaseRef.current,
+                    start: "top 90%",
+                    end: "bottom 0%",
+                    scrub: 1.5
+                }
+            })
+
+            // 1. Entrance phase (0% to ~37% of scroll distance)
+            tl.fromTo(".canvas-container",
+                { y: isMobile ? "-30vh" : "-60vh", opacity: 0, scale: 0.8, rotationZ: isMobile ? 0 : -0.1 },
+                { y: "0vh", opacity: 1, scale: 1, rotationZ: 0, ease: "none", duration: 37 }, 0)
+            
+            tl.fromTo(".ui-layer",
+                { y: "40vh", opacity: 0 },
+                { y: "0vh", opacity: 1, ease: "none", duration: 37 }, 0)
+
+            // 2. Idle Hold phase (37% to 79%)
+            // We use a dummy tween or just let GSAP handle the empty space by absolute positioning the next tweens.
+            
+            // 3. Exit phase (79% to 100% of scroll distance)
+            tl.to(".canvas-container", 
+                { y: "50vh", opacity: 0, scale: 0.9, rotationZ: 0.1, ease: "power2.in", duration: 21 }, 79)
+            
+            tl.to(".ui-layer", 
+                { y: "-30vh", opacity: 0, ease: "power2.in", duration: 21 }, 79)
+
+            // SVG Curve stretching effect
+            gsap.fromTo(".svg-curve-container",
+                { scaleY: 0.2, transformOrigin: "bottom" },
+                {
+                    scaleY: 1,
+                    ease: "none",
+                    scrollTrigger: {
+                        trigger: showcaseRef.current,
+                        start: "top 100%",
+                        end: "top 50%",
+                        scrub: 1
+                    }
+                }
+            )
+
+        }, showcaseRef)
         return () => ctx.revert()
     }, [])
 
@@ -180,7 +228,7 @@ export const ProjectsPage = () => {
     const currentDemo = currentProject?.links?.demo || currentProject?.demo || ""
     const currentGithub = currentProject?.links?.github || currentProject?.github || ""
 
-    // ── OPEN DETAIL (Wave Transition & Scroll Lock) ──
+    // ── OPEN DETAIL (Card Transition) ──
     const openDetail = useCallback((project) => {
         if (isAnimating) return
         setIsAnimating(true)
@@ -191,43 +239,23 @@ export const ProjectsPage = () => {
 
         const listView = listViewRef.current
         const detailView = detailViewRef.current
-        const wave = waveRef.current
 
         const tl = gsap.timeline({ onComplete: () => setIsAnimating(false) })
 
-        // Show centered detail view wrapper
-        tl.set(detailView, { display: "flex", pointerEvents: "auto", opacity: 1 }, 0)
-        
-        // Initial state of wave (tiny dot in center)
-        tl.set(wave, {
-            clipPath: "circle(0% at 50% 50%)",
-            display: "flex",
-        }, 0)
+        // Ensure detail view is visible but transparent and moved right
+        tl.set(detailView, { display: "flex", pointerEvents: "auto", opacity: 0, x: 50 }, 0)
 
-        // Wave expands to fill screen
-        tl.to(wave, {
-            clipPath: "circle(150% at 50% 50%)",
-            duration: 1.2,
-            ease: "power4.inOut"
-        }, 0)
-
-        // Simultaneously fade out list view behind the wave
+        // Fade out and move list view card to the left
         tl.to(listView, {
-            opacity: 0, scale: 0.95, y: 20, duration: 0.5, ease: "power2.inOut",
-            onComplete: () => gsap.set(listView, { display: "none" })
-        }, 0.2)
+            opacity: 0, x: -50, duration: 0.6, ease: "power3.inOut",
+            onComplete: () => gsap.set(listView, { display: "none", pointerEvents: "none" })
+        }, 0)
 
-        // Fade out the 3D Canvas
-        tl.to(".canvas-container", {
-            opacity: 0, duration: 0.5, ease: "power2.inOut"
+        // Slide in detail view from the right
+        tl.to(detailView, {
+            opacity: 1, x: 0, duration: 0.8, ease: "power3.out"
         }, 0.3)
 
-        // Slide up the center card content INSIDE the expanded wave
-        tl.fromTo(".detail-content",
-            { opacity: 0, y: 80, scale: 0.95 },
-            { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "power4.out" },
-            0.6
-        )
     }, [isAnimating])
 
     // ── CLOSE DETAIL ──
@@ -237,37 +265,28 @@ export const ProjectsPage = () => {
 
         const listView = listViewRef.current
         const detailView = detailViewRef.current
-        const wave = waveRef.current
 
         const tl = gsap.timeline({
             onComplete: () => {
                 setSelectedProject(null)
                 setIsAnimating(false)
-                gsap.set(detailView, { display: "none", pointerEvents: "none" })
                 // Unlock background scroll
                 if (window.__lenis) window.__lenis.start()
             }
         })
 
-        // Fade out detail content
-        tl.to(".detail-content", { opacity: 0, y: 40, scale: 0.95, duration: 0.4, ease: "power2.inOut" }, 0)
+        // Fade out and move detail view card to the right
+        tl.to(detailView, { 
+            opacity: 0, x: 50, duration: 0.6, ease: "power3.inOut",
+            onComplete: () => gsap.set(detailView, { display: "none", pointerEvents: "none" })
+        }, 0)
         
-        // Retract Wave
-        tl.to(wave, {
-            clipPath: "circle(0% at 50% 50%)",
-            duration: 1,
-            ease: "power4.inOut"
-        }, 0.2)
-        
-        // Bring back the list early, before wave fully closes
-        tl.set(listView, { display: "flex" }, 0.4)
-        tl.to(listView, { opacity: 1, scale: 1, y: 0, duration: 0.6, ease: "power4.out" }, 0.4)
+        // Bring back the list view card from the left
+        tl.set(listView, { display: "flex", pointerEvents: "auto", x: -50 }, 0.3)
+        tl.to(listView, { 
+            opacity: 1, x: 0, duration: 0.8, ease: "power3.out" 
+        }, 0.3)
 
-        // Fade the 3D Canvas back in
-        tl.to(".canvas-container", { opacity: 1, duration: 0.6, ease: "power2.inOut" }, 0.4)
-        
-        // Ensure wave disappears seamlessly
-        tl.set(wave, { display: "none" }, 1.2)
     }, [isAnimating, selectedProject])
 
     // Escape key
@@ -320,8 +339,14 @@ export const ProjectsPage = () => {
             <section
                 id="projects"
                 ref={showcaseRef}
-                className="relative h-screen overflow-hidden"
+                className="relative h-screen bg-[#e8ded5] overflow-visible"
             >
+                {/* SVG Transition Curve from White to Beige */}
+                <div className="svg-curve-container absolute top-0 left-0 w-full overflow-hidden leading-none z-10 transform -translate-y-[99%] pointer-events-none">
+                    <svg className="w-full h-[8vh] md:h-[12vh] block" viewBox="0 0 1440 100" preserveAspectRatio="none">
+                        <path fill="#e8ded5" d="M0,100 L1440,100 L1440,50 Q720,150 0,50 Z"></path>
+                    </svg>
+                </div>
                 {/* ─── 3D BACKGROUND CANVAS ─── */}
                 <div className="canvas-container absolute inset-0 z-0 pointer-events-none">
                     <Canvas camera={{ position: [0, 0, 15], fov: 45 }} gl={{ toneMapped: true }}>
@@ -344,203 +369,158 @@ export const ProjectsPage = () => {
                     </Canvas>
                 </div>
 
-                {/* ─── LIST VIEW ─── */}
-                <div
-                    ref={listViewRef}
-                    className="absolute inset-0 flex flex-col lg:flex-row items-stretch container mx-auto px-4 md:px-16 z-10 pointer-events-none"
-                >
-                    {/* Left: Preview + Quick Info (recruiter-friendly) */}
-                    <div className="w-full lg:w-[55%] flex flex-col justify-end lg:justify-center h-full pointer-events-none relative">
-                        {/* 3D Monitor occupies this space visually */}
-
-                        {/* Quick Identity: Title + Tagline pinned to the bottom left so it doesn't overlap the monitor */}
-                        <div className="relative lg:absolute bottom-0 lg:bottom-16 left-0 right-0 lg:right-auto lg:max-w-[500px] pointer-events-auto backdrop-blur-md bg-white/40 p-4 lg:p-6 rounded-t-2xl lg:rounded-2xl shadow-sm border border-white/50 mb-0 lg:mb-0">
-                            <h3 className="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight mb-1">
-                                {currentProject?.title}
-                            </h3>
-                            <p className="text-sm text-neutral-600 leading-relaxed mb-3">
-                                {currentTagline}
-                            </p>
-
-                            {/* Stack pills */}
-                            <div className="flex flex-wrap items-center gap-1.5 mb-4">
-                                {currentTags.slice(0, 5).map((tag, i) => (
-                                    <span key={i} className="text-[11px] font-mono px-2.5 py-1 rounded-full bg-white text-neutral-700 border border-neutral-200 shadow-sm">
-                                        {tag}
-                                    </span>
-                                ))}
-                                {currentTags.length > 5 && (
-                                    <span className="text-[11px] font-mono text-neutral-500">+{currentTags.length - 5}</span>
-                                )}
+                {/* ─── UI LAYER ─── */}
+                <div className="ui-layer absolute inset-0 container mx-auto px-4 md:px-8 z-10 pointer-events-none flex items-center justify-end h-full py-20 lg:py-24">
+                    
+                    {/* The Right Side Interactive Area */}
+                    <div className="w-full lg:w-[50%] h-full max-h-[85vh] relative flex items-center justify-end">
+                        
+                        {/* LIST CARD */}
+                        <div
+                            ref={listViewRef}
+                            className="absolute right-0 w-full h-full max-w-xl bg-white/40 backdrop-blur-3xl rounded-[2.5rem] p-8 lg:p-12 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] flex flex-col pointer-events-auto border border-white/60 will-change-transform"
+                        >
+                            <div className="mb-8 shrink-0">
+                                <span className="text-neutral-500 font-bold tracking-widest uppercase text-sm font-sans flex items-center gap-3">
+                                    Selected Projects <div className="h-px bg-neutral-300 flex-1"></div>
+                                </span>
                             </div>
 
-                            {/* Quick links */}
-                            <div className="flex items-center gap-4">
-                                {currentDemo && (
-                                    <a href={currentDemo} target="_blank" rel="noopener noreferrer"
-                                        className="flex items-center gap-1.5 text-xs font-bold font-mono text-neutral-900 hover:text-cyan-600 transition-colors bg-white px-3 py-1.5 rounded-lg shadow-sm border border-neutral-100">
-                                        <ExternalLink className="w-3.5 h-3.5" /> Live Demo
-                                    </a>
-                                )}
-                                {currentGithub && (
-                                    <a href={currentGithub} target="_blank" rel="noopener noreferrer"
-                                        className="flex items-center gap-1.5 text-xs font-bold font-mono text-neutral-600 hover:text-neutral-900 transition-colors bg-white px-3 py-1.5 rounded-lg shadow-sm border border-neutral-100">
-                                        <Github className="w-3.5 h-3.5" /> Source
-                                    </a>
-                                )}
+                            <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar pr-2 lg:pr-6 flex flex-col gap-8" data-lenis-prevent="true">
+                                {PROJECTS.map((project, i) => {
+                                    const isActive = i === activeIndex
+                                    return (
+                                        <button
+                                            key={project.title}
+                                            onMouseEnter={() => handleHover(i)}
+                                            onClick={() => openDetail(project)}
+                                            className="group text-left cursor-pointer transition-all duration-300 w-full focus:outline-none"
+                                        >
+                                            <h4 className={`text-4xl lg:text-5xl font-serif font-bold tracking-tight transition-all duration-400 ${isActive ? 'text-neutral-900 translate-x-3' : 'text-neutral-400 group-hover:text-neutral-600 group-hover:translate-x-1'}`}>
+                                                {project.title}
+                                            </h4>
+                                            
+                                            <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isActive ? 'max-h-20 opacity-100 mt-3 translate-x-3' : 'max-h-0 opacity-0 mt-0 translate-x-0'}`}>
+                                                <p className="text-[11px] font-mono tracking-[0.2em] font-bold text-neutral-500 uppercase">
+                                                    {(project.stack || project.tags)?.slice(0, 4).join(" • ")}
+                                                </p>
+                                            </div>
+                                        </button>
+                                    )
+                                })}
                             </div>
                         </div>
-                    </div>
 
-                    {/* Right: Project Names */}
-                    <div className="w-full lg:w-[45%] absolute top-16 right-4 lg:relative lg:top-auto lg:right-auto flex flex-col items-end lg:items-end justify-start lg:justify-center lg:h-full pointer-events-auto z-20">
-                        <span className="text-xs font-mono uppercase tracking-[0.3em] text-neutral-400 mb-3 lg:mb-6 flex items-center gap-3">
-                            My Projects <span className="w-10 h-px bg-neutral-300 inline-block" />
-                        </span>
-                        <div className="flex flex-col items-end gap-0.5 lg:gap-1">
-                            {PROJECTS.map((project, i) => {
-                                const isActive = i === activeIndex
-                                return (
-                                    <button
-                                        key={project.title}
-                                        onMouseEnter={() => handleHover(i)}
-                                        onClick={() => openDetail(project)}
-                                        className="py-1 cursor-pointer text-right group"
-                                    >
-                                        <span className={`text-lg sm:text-xl md:text-2xl lg:text-4xl tracking-tight transition-all duration-300 block ${isActive
-                                            ? "text-neutral-900 font-bold"
-                                            : "text-neutral-400 group-hover:text-neutral-600 font-light"
-                                            }`}>
-                                            {project.title}
-                                            {isActive && <span className="inline-block ml-2 text-cyan-500">·</span>}
-                                        </span>
-                                    </button>
-                                )
-                            })}
-                        </div>
-                    </div>
-                </div>
-
-                <div
-                    ref={detailViewRef}
-                    className="absolute inset-0 hidden items-center justify-center z-50 pointer-events-none p-4"
-                >
-                    {/* The Expanding Wave Background */}
-                    <div 
-                        ref={waveRef}
-                        className="absolute inset-0 bg-white/95 backdrop-blur-2xl items-center justify-center"
-                        style={{ display: "none" }}
-                    >
-                        {/* Centered Scrollable Content */}
-                        <div className="detail-content w-full max-w-4xl max-h-[85vh] flex flex-col shadow-[0_20px_80px_rgba(0,0,0,0.1)] rounded-3xl pointer-events-auto overflow-hidden relative border border-black/5 bg-white">
-                            
-                            <div className="overflow-y-auto w-full flex-1 relative min-h-0 custom-scrollbar overscroll-contain">
-                            <div className="py-8 lg:py-10 px-6 lg:px-12 flex flex-col gap-6 w-full mx-auto">
-                                {/* Back + Title */}
-                                <div className="text-center relative">
-                                    <button
-                                        onClick={closeDetail}
-                                        className="lg:hidden absolute left-0 top-0 p-2 bg-neutral-100 rounded-full shadow-sm z-50 hover:bg-neutral-200"
-                                    >
-                                        <ArrowLeft className="w-4 h-4 text-neutral-900" />
-                                    </button>
-                                    <button
-                                        onClick={closeDetail}
-                                        className="hidden lg:inline-flex items-center justify-center gap-2 text-sm font-mono text-neutral-400 hover:text-neutral-900 transition-colors cursor-pointer mb-2 group"
-                                    >
+                        {/* DETAIL CARD */}
+                        <div
+                            ref={detailViewRef}
+                            className="absolute right-0 w-full h-full max-w-2xl bg-white/50 backdrop-blur-3xl rounded-[2.5rem] p-8 lg:p-12 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] flex-col pointer-events-none hidden border border-white/60 will-change-transform"
+                        >
+                            <div className="flex items-center justify-between mb-8 shrink-0">
+                                <button
+                                    onClick={closeDetail}
+                                    className="flex items-center justify-center gap-2 text-sm font-bold font-sans tracking-wide text-neutral-500 hover:text-neutral-900 transition-colors cursor-pointer group uppercase"
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center group-hover:bg-black/10 transition-colors">
                                         <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-                                        Back to projects
-                                    </button>
-                                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-neutral-900 tracking-tight leading-tight mb-2 mt-8 lg:mt-0">
+                                    </div>
+                                    Back
+                                </button>
+                                
+                                <div className="flex items-center gap-3">
+                                    {(selectedProject?.links?.demo || selectedProject?.demo) && (
+                                        <a href={selectedProject.links?.demo || selectedProject.demo} target="_blank" rel="noopener noreferrer" 
+                                            className="px-5 py-2.5 bg-neutral-900 text-white rounded-full text-[11px] font-bold uppercase tracking-widest hover:bg-black transition-colors flex items-center gap-2">
+                                            Visit <ExternalLink className="w-3.5 h-3.5" />
+                                        </a>
+                                    )}
+                                     {(selectedProject?.links?.github || selectedProject?.github) && (
+                                        <a href={selectedProject.links?.github || selectedProject.github} target="_blank" rel="noopener noreferrer" 
+                                            className="px-3 py-2.5 bg-white text-neutral-900 rounded-full text-[11px] font-bold uppercase tracking-widest hover:bg-neutral-50 border border-neutral-200 transition-colors flex items-center justify-center">
+                                            <Github className="w-4 h-4" />
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar pr-2 lg:pr-6 flex flex-col" data-lenis-prevent="true">
+                                <div className="mb-10">
+                                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-black text-neutral-900 tracking-tight leading-none mb-6">
                                         {selectedProject?.title}
                                     </h2>
+                                    
+                                    <p className="text-xs font-mono tracking-[0.2em] font-bold text-neutral-500 uppercase border-b border-neutral-300/50 pb-6 mb-8">
+                                        {(selectedProject?.stack || selectedProject?.tags)?.join(" • ")}
+                                    </p>
 
-                                    {/* CTA */}
-                                    <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
-                                        {(selectedProject?.links?.demo || selectedProject?.demo) && (
-                                            <a
-                                                href={selectedProject.links?.demo || selectedProject.demo}
-                                                target="_blank" rel="noopener noreferrer"
-                                                className="px-5 py-2.5 bg-neutral-900 text-white font-bold rounded-xl hover:bg-black transition-colors flex items-center justify-center gap-2 text-sm shadow-md"
-                                            >
-                                                Live Preview <ExternalLink className="w-4 h-4" />
-                                            </a>
-                                        )}
-                                        {(selectedProject?.links?.github || selectedProject?.github) && (
-                                            <a
-                                                href={selectedProject.links?.github || selectedProject.github}
-                                                target="_blank" rel="noopener noreferrer"
-                                                className="px-5 py-2.5 bg-white text-neutral-900 border border-neutral-300 font-bold rounded-xl hover:bg-neutral-50 transition-colors flex items-center justify-center gap-2 text-sm shadow-sm"
-                                            >
-                                                Source Code <Github className="w-4 h-4" />
-                                            </a>
-                                        )}
-                                    </div>
-                                    <p className="text-sm md:text-base text-neutral-500 italic block mt-4">
-                                        {selectedProject?.tagline || selectedProject?.description}
+                                    <p className="text-xl lg:text-2xl font-serif text-neutral-800 leading-relaxed italic">
+                                        "{selectedProject?.tagline || selectedProject?.description}"
                                     </p>
                                 </div>
 
-                                {/* Stack */}
-                                {(selectedProject?.stack || selectedProject?.tags) && (
-                                    <div className="flex flex-wrap justify-center gap-2 mt-2">
-                                        {(selectedProject.stack || selectedProject.tags).map((tech, i) => (
-                                            <span key={i} className="text-xs font-mono px-3 py-1 rounded-full bg-neutral-200 text-neutral-600 border border-neutral-200">
-                                                {tech}
-                                            </span>
-                                        ))}
-                                    </div>
-                                )}
+                                <div className="flex flex-col gap-10">
+                                    {/* Additional detailed sections */}
+                                    {selectedProject?.problem && (
+                                        <div>
+                                            <h4 className="text-[11px] font-sans font-bold uppercase tracking-widest text-neutral-400 mb-3 flex items-center gap-3">
+                                                The Problem <span className="h-px bg-neutral-300/50 flex-1"></span>
+                                            </h4>
+                                            <div className="pl-4 border-l-2 border-neutral-200">
+                                                <RenderField data={selectedProject.problem} />
+                                            </div>
+                                        </div>
+                                    )}
 
-                                <div className="h-px w-full bg-neutral-200" />
+                                    {selectedProject?.solution && (
+                                        <div>
+                                            <h4 className="text-[11px] font-sans font-bold uppercase tracking-widest text-neutral-400 mb-3 flex items-center gap-3">
+                                                Solution <span className="h-px bg-neutral-300/50 flex-1"></span>
+                                            </h4>
+                                            <div className="pl-4 border-l-2 border-neutral-300">
+                                                <RenderField data={selectedProject.solution} />
+                                            </div>
+                                        </div>
+                                    )}
 
-                                {/* Problem */}
-                                {selectedProject?.problem && (
-                                    <div>
-                                        <h4 className="text-xs font-mono font-bold uppercase tracking-widest text-neutral-400 mb-2">Problem</h4>
-                                        <RenderField data={selectedProject.problem} />
-                                    </div>
-                                )}
+                                    {selectedProject?.architecture && (
+                                        <div>
+                                            <h4 className="text-[11px] font-sans font-bold uppercase tracking-widest text-neutral-400 mb-3 flex items-center gap-3">
+                                                Architecture <span className="h-px bg-neutral-300/50 flex-1"></span>
+                                            </h4>
+                                            <div className="pl-4 border-l-2 border-neutral-200">
+                                                <RenderField data={selectedProject.architecture} />
+                                            </div>
+                                        </div>
+                                    )}
 
-                                {/* Solution */}
-                                {selectedProject?.solution && (
-                                    <div>
-                                        <h4 className="text-xs font-mono font-bold uppercase tracking-widest text-neutral-400 mb-2">Solution</h4>
-                                        <RenderField data={selectedProject.solution} />
-                                    </div>
-                                )}
+                                    {(selectedProject?.role || selectedProject?.myRole) && (
+                                        <div>
+                                            <h4 className="text-[11px] font-sans font-bold uppercase tracking-widest text-neutral-400 mb-3 flex items-center gap-3">
+                                                My Role <span className="h-px bg-neutral-300/50 flex-1"></span>
+                                            </h4>
+                                            <div className="pl-4 border-l-2 border-neutral-200">
+                                                <RenderField data={selectedProject.role || selectedProject.myRole} />
+                                            </div>
+                                        </div>
+                                    )}
 
-                                {/* Architecture */}
-                                {selectedProject?.architecture && (
-                                    <div>
-                                        <h4 className="text-xs font-mono font-bold uppercase tracking-widest text-neutral-400 mb-2">Architecture</h4>
-                                        <RenderField data={selectedProject.architecture} />
-                                    </div>
-                                )}
-
-                                {/* Role */}
-                                {(selectedProject?.role || selectedProject?.myRole) && (
-                                    <div>
-                                        <h4 className="text-xs font-mono font-bold uppercase tracking-widest text-neutral-400 mb-2">My Role</h4>
-                                        <RenderField data={selectedProject.role || selectedProject.myRole} />
-                                    </div>
-                                )}
-
-                                {/* Result */}
-                                {selectedProject?.result && (
-                                    <div>
-                                        <h4 className="text-xs font-mono font-bold uppercase tracking-widest text-neutral-400 mb-2">Result</h4>
-                                        <RenderField data={selectedProject.result} />
-                                    </div>
-                                )}
-
-                                <div className="h-px w-full bg-neutral-200" />
+                                    {selectedProject?.result && (
+                                        <div>
+                                            <h4 className="text-[11px] font-sans font-bold uppercase tracking-widest text-neutral-400 mb-3 flex items-center gap-3">
+                                                Result <span className="h-px bg-neutral-300/50 flex-1"></span>
+                                            </h4>
+                                            <div className="pl-4 border-l-2 border-neutral-200">
+                                                <RenderField data={selectedProject.result} />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="h-12 w-full shrink-0"></div>
                             </div>
                         </div>
                     </div>
                 </div>
-                </div>
-            </section >
-        </div >
+            </section>
+        </div>
     )
 }
