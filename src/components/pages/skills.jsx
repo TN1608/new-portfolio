@@ -181,9 +181,17 @@ export const SkillsPage = () => {
                 {/* ── INTRO ── */}
                 <div ref={introRef} className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 will-change-transform">
                     <span className="text-xs md:text-sm font-mono tracking-[0.4em] uppercase text-neutral-400 mb-6 font-bold">Skills & Expertise</span>
-                    <div className="text-6xl sm:text-7xl md:text-8xl lg:text-[100px] font-black tracking-tighter leading-[0.85] text-[#cdc4bb] opacity-90">
-                        <BlurText text="Building Digital" delay={30} />
-                        <BlurText text="Experiences" delay={30} />
+                    <div className="text-6xl sm:text-7xl md:text-8xl lg:text-[100px] font-black tracking-tighter leading-[0.85] text-neutral-900 opacity-90">
+                        <BlurText text="Building Digital"
+                            delay={200}
+                            animateBy="words"
+                            direction="top"
+                        />
+                        <BlurText text="Experiences"
+                            animateBy="words"
+                            direction="top"
+                            delay={200}
+                        />
                     </div>
                 </div>
 
@@ -208,7 +216,7 @@ export const SkillsPage = () => {
                     <div key={idx} ref={el => xpScenesRef.current[idx] = el}
                         className="absolute inset-0 w-full h-full flex flex-col lg:flex-row items-center pointer-events-none z-40 opacity-0 overflow-hidden"
                         style={{ display: "none" }}>
-                        
+
                         {/* Giant Watermark Background */}
                         <div className="xp-watermark absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[20vw] font-black text-[#2a2723]/[0.02] select-none z-0 whitespace-nowrap tracking-tighter pointer-events-none">
                             {xp.company}
@@ -219,7 +227,7 @@ export const SkillsPage = () => {
                             <div className="xp-index text-5xl md:text-7xl font-black text-[#2a2723]/10 mb-6 font-mono -ml-1">
                                 {String(idx + 1).padStart(2, '0')}
                             </div>
-                            
+
                             <div className="mb-8 flex flex-wrap gap-x-4 md:gap-x-6 gap-y-2" style={{ perspective: "1000px" }}>
                                 {xp.company.split(" ").map((word, wIdx) => (
                                     <div key={wIdx} className="overflow-hidden flex">
@@ -231,7 +239,7 @@ export const SkillsPage = () => {
                                     </div>
                                 ))}
                             </div>
-                            
+
                             <div className="flex items-center gap-6 mb-8 lg:mb-12">
                                 <div className="xp-decor-line w-16 md:w-24 h-[3px] bg-[#2a2723] rounded-full origin-left"></div>
                                 <div className="xp-period bg-[#2a2723] text-[#f4f2ef] text-[10px] md:text-xs font-bold px-5 py-2.5 rounded-full uppercase tracking-widest shadow-xl">

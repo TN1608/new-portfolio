@@ -20,6 +20,9 @@ export const Hero = forwardRef((props, ref) => {
     const textStrokelayerRef = useRef(null)
     const textSolidlayerRef = useRef(null)
     const badgeRef = useRef(null)
+    const badgeWrapRef = useRef(null)
+    const subWrapRef = useRef(null)
+    const scrollWrapRef = useRef(null)
 
     // Transition refs
     const isTransitioning = useRef(false)
@@ -110,10 +113,10 @@ export const Hero = forwardRef((props, ref) => {
                         ease: "power1.inOut" 
                     }, 0)
                     .to(headingWrapRef.current, { yPercent: -40, opacity: 0, ease: "power1.inOut" }, 0)
-                    .to(subRef.current, { yPercent: -60, opacity: 0, ease: "power1.inOut" }, 0)
+                    .to(subWrapRef.current, { yPercent: -60, opacity: 0, ease: "power1.inOut" }, 0)
                     .to(ctaRef.current, { yPercent: -80, opacity: 0, ease: "power1.inOut" }, 0)
-                    .to(scrollIndicatorRef.current, { opacity: 0, ease: "power1.inOut" }, 0)
-                    .to(badgeRef.current, { yPercent: -20, opacity: 0, ease: "power1.inOut" }, 0)
+                    .to(scrollWrapRef.current, { opacity: 0, ease: "power1.inOut" }, 0)
+                    .to(badgeWrapRef.current, { yPercent: -20, opacity: 0, ease: "power1.inOut" }, 0)
             })
 
             // ── MOUSE PARALLAX ──
@@ -242,31 +245,33 @@ export const Hero = forwardRef((props, ref) => {
             <div className="container relative z-20 px-4 md:px-12 flex flex-col items-center justify-center h-full text-center mt-12">
 
                 {/* Profile & Role Info */}
-                <div ref={badgeRef} className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 mb-8 opacity-0">
-                    <div className="flex items-center gap-3 bg-white/5 pr-5 p-1.5 rounded-full border border-white/10 backdrop-blur-md">
-                        <div className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center text-lg font-black font-mono">
-                            T
+                <div ref={badgeWrapRef} className="flex justify-center z-10 w-full mb-8">
+                    <div ref={badgeRef} className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 opacity-0">
+                        <div className="flex items-center gap-3 bg-white/5 pr-5 p-1.5 rounded-full border border-white/10 backdrop-blur-md">
+                            <div className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center text-lg font-black font-mono">
+                                T
+                            </div>
+                            <div className="flex flex-col items-start text-left">
+                                <span className="text-white font-bold text-sm tracking-wide leading-tight">Tuan Nguyen</span>
+                                <span className="text-white/50 text-[10px] uppercase tracking-widest font-mono mt-0.5">Frontend Developer</span>
+                            </div>
                         </div>
-                        <div className="flex flex-col items-start text-left">
-                            <span className="text-white font-bold text-sm tracking-wide leading-tight">Tuan Nguyen</span>
-                            <span className="text-white/50 text-[10px] uppercase tracking-widest font-mono mt-0.5">Frontend Developer</span>
-                        </div>
+
+                        <div className="hidden sm:block w-1.5 h-1.5 rounded-full bg-white/20" />
+
+                        <RotatingText
+                            texts={["UI/UX Enthusiast", "Creative Developer", "Full-Stack Capable"]}
+                            mainClassName="px-5 py-2.5 rounded-full text-xs md:text-sm font-semibold bg-white/10 text-white overflow-hidden justify-center border border-white/20 backdrop-blur-md"
+                            staggerFrom={"last"}
+                            initial={{ y: "100%" }}
+                            animate={{ y: 0 }}
+                            exit={{ y: "-120%" }}
+                            staggerDuration={0.025}
+                            splitLevelClassName="overflow-hidden pb-0.5"
+                            transition={{ type: "spring", damping: 30, stiffness: 400 }}
+                            rotationInterval={3000}
+                        />
                     </div>
-
-                    <div className="hidden sm:block w-1.5 h-1.5 rounded-full bg-white/20" />
-
-                    <RotatingText
-                        texts={["UI/UX Enthusiast", "Creative Developer", "Full-Stack Capable"]}
-                        mainClassName="px-5 py-2.5 rounded-full text-xs md:text-sm font-semibold bg-white/10 text-white overflow-hidden justify-center border border-white/20 backdrop-blur-md"
-                        staggerFrom={"last"}
-                        initial={{ y: "100%" }}
-                        animate={{ y: 0 }}
-                        exit={{ y: "-120%" }}
-                        staggerDuration={0.025}
-                        splitLevelClassName="overflow-hidden pb-0.5"
-                        transition={{ type: "spring", damping: 30, stiffness: 400 }}
-                        rotationInterval={3000}
-                    />
                 </div>
 
                 {/* Typography Wrapper (3D perspective) */}
@@ -321,13 +326,15 @@ export const Hero = forwardRef((props, ref) => {
                 </div>
 
                 {/* Subtitle */}
-                <p
-                    ref={subRef}
-                    className="max-w-2xl text-sm md:text-base lg:text-lg text-white/70 mb-10 md:mb-12 leading-relaxed opacity-0"
-                >
-                    I build comprehensive full-stack solutions with a focus on
-                    immersive frontend experiences and cutting-edge animations.
-                </p>
+                <div ref={subWrapRef} className="w-full flex justify-center z-10 mb-10 md:mb-12">
+                    <p
+                        ref={subRef}
+                        className="max-w-2xl text-sm md:text-base lg:text-lg text-white/70 leading-relaxed opacity-0"
+                    >
+                        I build comprehensive full-stack solutions with a focus on
+                        immersive frontend experiences and cutting-edge animations.
+                    </p>
+                </div>
 
                 {/* CTA Buttons */}
                 <div ref={ctaRef} className="flex flex-col sm:flex-row gap-4 mb-16">
@@ -342,13 +349,14 @@ export const Hero = forwardRef((props, ref) => {
                 </div>
 
                 {/* Scroll Indicator */}
-                <div
-                    ref={scrollIndicatorRef}
-                    className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 text-white/50 cursor-pointer"
-                    onClick={() => handleNavigate('projects')}
-                >
-                    <span className="text-[10px] font-mono uppercase tracking-[0.4em]">Scroll</span>
-                    <ArrowDown className="w-4 h-4" />
+                <div ref={scrollWrapRef} className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 cursor-pointer" onClick={() => handleNavigate('projects')}>
+                    <div
+                        ref={scrollIndicatorRef}
+                        className="flex flex-col items-center gap-3 text-white/50"
+                    >
+                        <span className="text-[10px] font-mono uppercase tracking-[0.4em]">Scroll</span>
+                        <ArrowDown className="w-4 h-4" />
+                    </div>
                 </div>
             </div>
         </section>
