@@ -150,7 +150,7 @@ export const ContactPage = () => {
                                 {CONTACT_INFO.filter(c => c.label !== "Email").map((info) => (
                                     <div key={info.label} className="contact-animate">
                                         <AnimatedLink
-                                            href={info.value.startsWith("http") ? info.value : `mailto:${info.value}`}
+                                            href={info.href}
                                             className="text-lg sm:text-xl md:text-2xl font-medium text-secondary-foreground hover:text-foreground py-1.5"
                                         >
                                             {info.label}

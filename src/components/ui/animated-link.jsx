@@ -10,7 +10,7 @@ export const AnimatedLink = ({ children, href, className, ...props }) => {
             className={cn(
                 className,
                 "group relative flex items-center",
-                "before:pointer-events-none before:absolute before:left-0 before:w-full before:bg-muted before:-z-10 before:content-['']",
+                "before:pointer-events-none before:absolute before:left-0 before:w-full before:bg-gray-500/20 before:-z-10 before:content-['']",
                 "before:scale-x-0 before:transition-transform before:duration-300 before:ease-[cubic-bezier(0.76,0,0.24,1)]",
                 "before:origin-left before:h-full px-2 hover:before:scale-x-100 hover:text-foreground transition-colors"
             )}

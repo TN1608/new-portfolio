@@ -2,9 +2,9 @@ import { Code, Mail } from "lucide-react"
 import { FaGithub } from "react-icons/fa"
 
 export const CONTACT_INFO = [
-    { icon: Mail, label: "Email", value: "tuanngdinh.1608@gmail.com" },
-    { icon: FaGithub, label: "GitHub", value: "https://github.com/TN1608" },
-    { icon: Code, label: "Website", value: "https://tunzngportfolio.id.vn" },
+    { icon: Mail, label: "Email", href: "mailto:tuanngdinh.1608@gmail.com" },
+    { icon: FaGithub, label: "GitHub", href: "https://github.com/TN1608" },
+    { icon: Code, label: "Website", href: "https://tunzngportfolio.id.vn" },
 ]
 
 export const ABOUT_ME_LINKS = [
