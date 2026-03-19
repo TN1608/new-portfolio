@@ -5,28 +5,20 @@ import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { Canvas, useFrame } from "@react-three/fiber"
 import { Environment, Float, ContactShadows } from "@react-three/drei"
-import { Model as Smartphone } from "@/assets/3d/Smartphone"
+import { Model as Iphone17Pro } from "@/components/models/Iphone17Pro"
 import BlurText from "@/components/BlurText"
-import CountUp from "@/components/CountUp"
-import { SKILL_CATEGORIES, EXPERIENCE, SKILLS_STATS } from "@/assets/data/SKILLS"
+import { SKILL_CATEGORIES, EXPERIENCE } from "@/assets/data/SKILLS"
 
 gsap.registerPlugin(ScrollTrigger)
 
-// Shared GSAP proxy object to perfectly sync the DOM timeline with the R3F Canvas
 const proxy = {
-    x: 0,
-    y: -0.5,
-    z: 0,
-    rotX: 0,
-    rotY: 0,
-    rotZ: 0,
-    scale: 2.2
+    x: 0, y: 15, z: -10,
+    rotX: Math.PI * 2, rotY: Math.PI * 4, rotZ: Math.PI,
+    scale: 0.1
 }
 
 const PhoneAnimator = () => {
     const groupRef = useRef(null)
-
-    // Smoothly apply the proxy updates per-frame to the 3D model
     useFrame(() => {
         if (!groupRef.current) return
         groupRef.current.position.set(proxy.x, proxy.y, proxy.z)
@@ -36,8 +28,9 @@ const PhoneAnimator = () => {
 
     return (
         <group ref={groupRef}>
-            <Float speed={2} rotationIntensity={0.2} floatIntensity={0.5}>
-                <Smartphone />
+            <Float speed={2} rotationIntensity={0.1} floatIntensity={0.2}>
+                {/* Screen content is now a CanvasTexture, no children needed */}
+                <Iphone17Pro />
             </Float>
         </group>
     )
@@ -46,519 +39,230 @@ const PhoneAnimator = () => {
 export const SkillsPage = () => {
     const sectionRef = useRef(null)
     const containerRef = useRef(null)
-
-    // Elements refs
-    const titleRef = useRef(null)
-    const skillsListRef = useRef(null)
-    const xpListRef = useRef(null)
-    const statsRef = useRef(null)
-    const cursorRef = useRef(null)
+    const introRef = useRef(null)
+    const skillNodesRef = useRef([])
+    const xpScenesRef = useRef([])
 
     useEffect(() => {
         const ctx = gsap.context(() => {
-            // Reset proxy on mount
-            proxy.x = 0
-            proxy.y = -0.5
-            proxy.rotX = 0
-            proxy.rotY = 0
-            proxy.rotZ = 0
-            proxy.screenOpacity = 0
-            proxy.scale = window.innerWidth < 768 ? 1.8 : 2.2
-
             const isMobile = window.innerWidth < 1024
 
-            // Set up SVG Timeline Path drawing
-            const xpPath = document.querySelector(".xp-timeline-path")
-            if (xpPath) {
-                const length = xpPath.getTotalLength()
-                gsap.set(xpPath, { strokeDasharray: length, strokeDashoffset: length })
-            }
+            gsap.set(proxy, { x: 0, y: 15, z: -10, rotX: Math.PI * 2, rotY: Math.PI * 4, rotZ: Math.PI, scale: 0.1 })
+            gsap.set(skillNodesRef.current, { opacity: 0, scale: 0 })
+            gsap.set(".fade-out-overlay", { opacity: 0 })
+            gsap.set(".stats-highlight-overlay", { opacity: 0 })
 
-            // Create main timeline
+            // XP scenes: hide all initially + set entrance states
+            xpScenesRef.current.forEach(scene => {
+                if (!scene) return
+                gsap.set(scene, { opacity: 0, display: "none" })
+                gsap.set(scene.querySelectorAll(".xp-company-char"), { yPercent: 120, rotateX: -60, opacity: 0 })
+                gsap.set(scene.querySelector(".xp-role"), { opacity: 0, x: -60 })
+                gsap.set(scene.querySelectorAll(".xp-highlight"), { opacity: 0, x: -80, y: 30 })
+                gsap.set(scene.querySelector(".xp-period"), { opacity: 0, scale: 0.3, rotation: -25 })
+                gsap.set(scene.querySelector(".xp-decor-line"), { scaleX: 0, transformOrigin: "left center" })
+                gsap.set(scene.querySelector(".xp-watermark"), { opacity: 0, x: 200 })
+                gsap.set(scene.querySelector(".xp-index"), { opacity: 0, scale: 0 })
+            })
+
             const tl = gsap.timeline({
                 scrollTrigger: {
                     trigger: sectionRef.current,
                     start: "top top",
-                    end: "+=800%", // Longer scroll for sequential reading (expanded for manual xp loop)
-                    scrub: 1,
+                    end: "+=1400%",
+                    scrub: 1.5,
                     pin: true,
                     anticipatePin: 1
                 }
             })
 
-            // ── PHASE 1: Move Phone, Title out, Rotate slightly ──
-            // On desktop: phone moves left. On mobile: phone moves up.
-            const p1_x = isMobile ? 0 : -2.5
-            const p1_y = isMobile ? 2.5 : -0.5
-            tl.to(proxy, { x: p1_x, y: p1_y, z: 0.5, rotX: 0.15, rotY: Math.PI / 6, rotZ: 0.05, screenOpacity: 1, ease: "power2.inOut", duration: 1.2 }, 0)
-            tl.to(titleRef.current, { opacity: 0, scale: 0.8, duration: 1 }, 0)
+            // ── PHASE 1: iPhone Drops In ──
+            tl.to(proxy, {
+                x: 0, y: 0, z: 0,
+                rotX: 0.1, rotY: isMobile ? 0 : Math.PI / 12, rotZ: 0,
+                scale: isMobile ? 12 : 18,
+                ease: "power4.out", duration: 1.5
+            }, 0)
+            tl.to(introRef.current, { opacity: 0, scale: 1.1, filter: "blur(10px)", duration: 1 }, 0.5)
 
-            // Show Skills container
-            tl.to(skillsListRef.current, { opacity: 1, display: "flex", duration: 0.1 }, 0.9)
+            // ── PHASE 2: Skills Orbit Burst ──
+            tl.to(proxy, { z: -5, rotX: -0.15, rotY: Math.PI / 8, ease: "power2.inOut", duration: 1.5 }, 1.5)
 
-            const sparks = cursorRef.current.querySelectorAll(".spark")
-            const arrowImg = cursorRef.current.querySelector(".cursor-arrow")
-            const handImg = cursorRef.current.querySelector(".cursor-hand")
+            skillNodesRef.current.forEach((node, i) => {
+                const angle = (i / skillNodesRef.current.length) * Math.PI * 2 - Math.PI / 2
+                const radius = isMobile ? (110 + (i % 2) * 50) : (350 + (i % 2) * 100)
+                tl.to(node, {
+                    opacity: 1, x: Math.cos(angle) * radius * (isMobile ? 1 : 1.4), y: Math.sin(angle) * radius * 0.85,
+                    scale: 1, rotation: gsap.utils.random(-12, 12),
+                    ease: "elastic.out(1, 0.7)", duration: 1.5
+                }, 1.8 + i * 0.1)
+            })
+            tl.to(skillNodesRef.current, { y: "+=15", rotation: "+=3", yoyo: true, repeat: 1, duration: 1.5, ease: "sine.inOut" }, 3.5)
 
-            // Cursor moves to phone area
-            tl.fromTo(cursorRef.current,
-                { opacity: 0, x: "50vw", y: "80vh", scale: 1, rotate: 20 },
-                { opacity: 1, x: isMobile ? "50vw" : "25vw", y: isMobile ? "20vh" : "55vh", rotate: 0, duration: 1, ease: "power2.out" },
-                0.5
-            )
+            // ── PHASE 3: Zoom Stats ──
+            tl.to(skillNodesRef.current, { opacity: 0, x: 0, y: 0, scale: 0, duration: 1, ease: "power4.in" }, 5)
+            tl.to(proxy, {
+                x: 0, y: isMobile ? 0.3 : -0.2, z: 0,
+                rotX: 0, rotY: 0, rotZ: 0,
+                scale: isMobile ? 30 : 44,
+                ease: "expo.inOut", duration: 2.2
+            }, 5.5)
+            tl.to(".stats-highlight-overlay", { opacity: 0.7, duration: 1.5 }, 6.5)
+            tl.to({}, { duration: 2 }) // Hold
 
-            // Switch to hand cursor right before the first click
-            tl.set(arrowImg, { opacity: 0 }, 1.4)
-            tl.set(handImg, { opacity: 1 }, 1.4)
+            // ── PHASE 4: Editorial Experience Scenes ──
+            tl.to(".stats-highlight-overlay", { opacity: 0, duration: 1 }, 8.5)
+            tl.to(proxy, { y: 20, z: -50, rotX: Math.PI / 6, scale: 3, ease: "power3.inOut", duration: 2 }, 8.5)
 
-            // Sequence through each skill category with a dynamic "burst/hologram" effect
-            const categories = gsap.utils.toArray(".skill-category-item")
+            let xpBaseTime = 10
+            xpScenesRef.current.forEach((scene, i) => {
+                if (!scene) return
+                const enterTime = xpBaseTime + (i * 5)
 
-            categories.forEach((cat, i) => {
-                const startTime = 1.5 + (i * 2) // Gave it a bit more time to breathe (2s instead of 1.5s)
-                const clickTime = startTime - 0.2
+                tl.set(scene, { display: "flex", opacity: 1 }, enterTime)
+                tl.to(scene.querySelector(".xp-watermark"), { opacity: 0.04, x: 0, duration: 2, ease: "power3.out" }, enterTime)
+                tl.to(scene.querySelector(".xp-index"), { opacity: 1, scale: 1, duration: 1, ease: "back.out(2)" }, enterTime + 0.2)
+                tl.to(scene.querySelectorAll(".xp-company-char"), {
+                    yPercent: 0, rotateX: 0, opacity: 1,
+                    stagger: 0.04, duration: 1.2, ease: "back.out(1.4)"
+                }, enterTime + 0.3)
+                tl.to(scene.querySelector(".xp-decor-line"), { scaleX: 1, duration: 1.2, ease: "power3.out" }, enterTime + 0.5)
+                tl.to(scene.querySelector(".xp-period"), { opacity: 1, scale: 1, rotation: 0, duration: 0.8, ease: "back.out(2)" }, enterTime + 0.7)
+                tl.to(scene.querySelector(".xp-role"), { opacity: 1, x: 0, duration: 0.8, ease: "power3.out" }, enterTime + 0.9)
+                tl.to(scene.querySelectorAll(".xp-highlight"), {
+                    opacity: 1, x: 0, y: 0,
+                    stagger: 0.2, duration: 1.2, ease: "elastic.out(1, 0.8)"
+                }, enterTime + 1.2)
 
-                // Lively Cursor click: scale down and bounce back
-                tl.to(cursorRef.current, { scale: 0.8, rotate: -5, duration: 0.1, yoyo: true, repeat: 1 }, clickTime)
-
-                // Exploding sparks effect (Playful multicoloured particle burst)
-                tl.fromTo(sparks,
-                    { x: 0, y: 0, scale: 1, opacity: 1 },
-                    {
-                        x: (index) => Math.cos(index * (Math.PI * 2) / 6) * 45,
-                        y: (index) => Math.sin(index * (Math.PI * 2) / 6) * 45,
-                        scale: 0,
-                        opacity: 0,
-                        duration: 0.5,
-                        ease: "expo.out",
-                        stagger: 0
-                    },
-                    clickTime
-                )
-
-                // ── Fancy Skill Tags Burst Reveal ──
-                // Select the category title and individual skill tags within it
-                const catTitle = cat.querySelector(".cat-title")
-                const tags = cat.querySelectorAll(".skill-tag")
-
-                // Make the category container visible
-                tl.set(cat, { opacity: 1 }, startTime)
-
-                // The 3D Phone reacts to the click/burst!
-                // It does a subtle tilt/swivel as if emitting the hologram
-                tl.to(proxy, {
-                    rotX: () => 0.15 + gsap.utils.random(-0.05, 0.05),
-                    rotY: () => (Math.PI / 6) + gsap.utils.random(-0.1, 0.1),
-                    z: () => 0.5 + gsap.utils.random(0.1, 0.4), // slight zoom bounce
-                    duration: 0.8,
-                    ease: "back.out(2)"
-                }, clickTime)
-                // settle phone back
-                tl.to(proxy, { z: 0.5, duration: 1.2, ease: "power2.out" }, clickTime + 0.8)
-
-                // 1. Reveal the Category Title dropping down
-                tl.fromTo(catTitle,
-                    { opacity: 0, y: -20, scale: 0.9 },
-                    { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.5)" },
-                    startTime
-                )
-
-                // 2. Playful Stagger Reveal from Natural Flexbox Positions
-                tl.fromTo(tags,
-                    {
-                        opacity: 0,
-                        y: 40,
-                        scale: 0.5,
-                        rotation: () => gsap.utils.random(-45, 45) // Start heavily rotated
-                    },
-                    {
-                        opacity: 1,
-                        y: 0,
-                        scale: 1,
-                        rotation: () => gsap.utils.random(-6, 6), // End with a slight playful tilt
-                        duration: 0.8,
-                        ease: "back.out(2)",
-                        stagger: { amount: 0.3, from: "start" } // Stagger them naturally
-                    },
-                    startTime + 0.1
-                )
-
-                // 3. Scrub-safe subtle wiggle/float
-                tl.to(tags, {
-                    y: "-=12", // Drift slightly up
-                    rotation: () => gsap.utils.random(-12, 12), // Gentle wiggle
-                    duration: 1.5,
-                    ease: "sine.inOut"
-                }, startTime + 1.0)
-
-                // Fade Out: Pop them down and fade away cleanly
-                if (i < categories.length - 1) {
-                    tl.to([catTitle, tags], {
-                        opacity: 0,
-                        y: 20,
-                        scale: 0.8,
-                        rotation: () => gsap.utils.random(-30, 30),
-                        duration: 0.4,
-                        stagger: 0.05,
-                        ease: "power2.in"
-                    }, startTime + 1.8)
+                if (i < EXPERIENCE.length - 1) {
+                    const exitTime = enterTime + 4
+                    tl.to(scene.querySelectorAll(".xp-company-char"), { yPercent: -120, opacity: 0, stagger: 0.02, duration: 0.6, ease: "power3.in" }, exitTime)
+                    tl.to(scene.querySelectorAll(".xp-role, .xp-highlight, .xp-decor-line, .xp-period, .xp-watermark, .xp-index"), { opacity: 0, x: 100, stagger: 0.04, duration: 0.5, ease: "power3.in" }, exitTime)
+                    tl.set(scene, { display: "none" }, exitTime + 0.8)
                 }
             })
 
-            const afterSkillsTime = 1.5 + (categories.length * 2)
-
-            // Fade out cursor before phase 2
-            tl.to(cursorRef.current, { opacity: 0, duration: 0.5 }, afterSkillsTime - 0.5)
-            // Reset back to arrow cursor for its travel phase
-            tl.set(arrowImg, { opacity: 1 }, afterSkillsTime)
-            tl.set(handImg, { opacity: 0 }, afterSkillsTime)
-
-            // ── PHASE 2: Move Phone, Extreme Camera Swivel ──
-            // On desktop: phone lands on the right. On mobile: stays top but swivels.
-            const p2_x = isMobile ? 0 : 2.2
-            const p2_y = isMobile ? 2.5 : -0.5
-            // Phone pushes back slightly (z: -1), does a large swivel
-            tl.to(proxy, { x: 0, y: isMobile ? 3 : 0, z: -1, rotY: Math.PI, ease: "power1.inOut", duration: 0.7 }, afterSkillsTime)
-            tl.to(proxy, { x: p2_x, y: p2_y, z: 0.5, rotX: 0.1, rotY: -Math.PI / 6, rotZ: -0.05, ease: "power2.out", duration: 0.8 }, afterSkillsTime + 0.7)
-
-            // Fade out last skill category and entire skills container
-            tl.to(categories[categories.length - 1].querySelectorAll(".cat-title, .skill-tag"), {
-                opacity: 0,
-                x: -100,
-                stagger: 0.05,
-                duration: 0.5,
-                ease: "power2.in"
-            }, afterSkillsTime)
-            tl.to(skillsListRef.current, { opacity: 0, display: "none", duration: 0.5 }, afterSkillsTime + 0.5)
-
-            // Fade in experience container
-            tl.fromTo(xpListRef.current,
-                { opacity: 0, x: -100, display: "none" },
-                { opacity: 1, x: 0, display: "flex", ease: "power2.out", duration: 0.8 }, afterSkillsTime + 0.5
-            )
-
-            // Move cursor to phone area for experience clicking
-            const xpStart = afterSkillsTime + 1
-            tl.fromTo(cursorRef.current,
-                { opacity: 0, x: "50vw", y: "80vh", scale: 1 },
-                { opacity: 1, x: isMobile ? "50vw" : "75vw", y: isMobile ? "20vh" : "55vh", duration: 0.8, ease: "power2.out" },
-                xpStart
-            )
-
-            // Switch to hand cursor right before clicking sequences begin
-            tl.set(arrowImg, { opacity: 0 }, xpStart + 0.8)
-            tl.set(handImg, { opacity: 1 }, xpStart + 0.8)
-
-            // Sequence through each experience item 
-            const xpItems = gsap.utils.toArray(".xp-item")
-            const xpDots = gsap.utils.toArray(".xp-dot")
-            const xpPathAnim = xpPath ? xpPath.getTotalLength() : 0
-
-            // Base SVG line draw: gradually draw the whole line while items appear
-            if (xpPath) {
-                tl.to(xpPath, {
-                    strokeDashoffset: 0,
-                    duration: xpItems.length * 1.5,
-                    ease: "none"
-                }, xpStart + 0.5)
+            // ── PHASE 5: Exit Dive ──
+            const exitTime = xpBaseTime + (EXPERIENCE.length * 5) + 0.5
+            const lastScene = xpScenesRef.current[EXPERIENCE.length - 1]
+            if (lastScene) {
+                tl.to(lastScene, { opacity: 0, scale: 0.95, filter: "blur(10px)", duration: 1.5 }, exitTime)
             }
-
-            xpItems.forEach((xp, i) => {
-                const xpTime = xpStart + 0.8 + (i * 1.5)
-                const clickTime = xpTime - 0.2
-
-                // Lively Cursor click
-                tl.to(cursorRef.current, { scale: 0.8, rotate: -5, duration: 0.1, yoyo: true, repeat: 1 }, clickTime)
-
-                // Exploding sparks effect
-                tl.fromTo(sparks,
-                    { x: 0, y: 0, scale: 1, opacity: 1 },
-                    {
-                        x: (index) => Math.cos(index * (Math.PI * 2) / 6) * 45,
-                        y: (index) => Math.sin(index * (Math.PI * 2) / 6) * 45,
-                        scale: 0,
-                        opacity: 0,
-                        duration: 0.5,
-                        ease: "expo.out",
-                        stagger: 0
-                    },
-                    clickTime
-                )
-
-                // The timeline dot pops in
-                if (xpDots[i]) {
-                    tl.fromTo(xpDots[i],
-                        { scale: 0, opacity: 0 },
-                        { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2)" },
-                        clickTime + 0.1
-                    )
-                }
-
-                // Fade In item with an energetic bouncy spring from below and slightly skewed
-                tl.fromTo(xp,
-                    { opacity: 0, y: 60, scale: 0.8, rotation: 3 },
-                    { opacity: 1, y: 0, scale: 1, rotation: 0, duration: 1, ease: "elastic.out(1, 0.7)" },
-                    xpTime
-                )
-            })
-
-            const holdXpTime = xpStart + 0.8 + (xpItems.length * 1.5)
-
-            // Fade out cursor
-            tl.to(cursorRef.current, { opacity: 0, duration: 0.5 }, holdXpTime - 0.5)
-            tl.to({}, { duration: 1 }) // Hold XP on screen
-
-            // ── PHASE 3: Rotate Landscape & Center for Stats ──
-            const statsTime = holdXpTime + 0.5
-
-            // Fade out xp
-            tl.to(xpListRef.current, { opacity: 0, y: -50, duration: 0.8 }, statsTime)
-
-            // Phone turns horizontal (landscape) and zooms in a bit
-            tl.to(proxy, {
-                x: 0,
-                y: isMobile ? 1 : 0,
-                z: isMobile ? 1 : 3,
-                rotX: 0,
-                rotY: 0,
-                rotZ: -Math.PI / 2, // Rotate exactly 90 degrees
-                scale: isMobile ? 1.5 : 2.2,
-                ease: "power3.inOut",
-                duration: 1.5
-            }, statsTime)
-
-            // Show Stats using a dynamic stagger bounce
-            const statsItems = gsap.utils.toArray(".stat-item")
-            tl.fromTo(statsRef.current,
-                { opacity: 0 },
-                { opacity: 1, duration: 0.1 }, statsTime + 1
-            )
-            tl.fromTo(statsItems,
-                { opacity: 0, scale: 0.3, y: 40, rotationY: 45 },
-                { opacity: 1, scale: 1, y: 0, rotationY: 0, duration: 0.8, stagger: 0.15, ease: "back.out(1.5)" },
-                statsTime + 1.1
-            )
-
-            // ── PHASE 4: Zoom Into Screen (Transition to next section) ──
-            const finalZoomTime = statsTime + 3
-
-            // Fade out stats
-            tl.to(statsRef.current, { opacity: 0, scale: 1.2, duration: 0.5 }, finalZoomTime)
-
-            // Extreme zoom into the screen, spinning it wildly like being pulled into a portal
-            tl.to(proxy, {
-                z: 15, // Zoom past the camera
-                rotZ: "+=" + (Math.PI * 2), // Full barrel roll
-                scale: 3,
-                ease: "expo.in",
-                duration: 1.5
-            }, finalZoomTime + 0.2)
-
-            // Fade the entire scene to black/white at the very end
-            tl.to(containerRef.current, { opacity: 0, ease: "power2.in", duration: 1 }, finalZoomTime + 0.5)
+            tl.to(proxy, { x: 0, y: 0, z: 25, rotX: 0, rotY: 0, rotZ: -Math.PI / 2, scale: 120, duration: 2, ease: "expo.in" }, exitTime + 0.5)
+            tl.to(".fade-out-overlay", { opacity: 1, duration: 1.5 }, exitTime + 1.5)
 
         }, sectionRef)
-
         return () => ctx.revert()
     }, [])
 
     return (
-        <section ref={sectionRef} id="skills" className="relative h-screen bg-secondary overflow-hidden text-foreground">
+        <section ref={sectionRef} id="skills" className="relative h-screen bg-[#e8ded5] overflow-hidden text-neutral-900">
+            <div className="stats-highlight-overlay absolute inset-0 bg-[#0a0a0a] z-[5] pointer-events-none"></div>
+            <div className="absolute top-0 left-0 w-full overflow-hidden leading-none z-10 transform -translate-y-full pointer-events-none">
+                <svg className="w-full h-[8vh] md:h-[12vh] block" viewBox="0 0 1440 100" preserveAspectRatio="none">
+                    <path fill="#e8ded5" d="M0,100 L1440,100 L1440,50 Q720,150 0,50 Z"></path>
+                </svg>
+            </div>
 
-            {/* 3D CANVAS BACKGROUND */}
+            {/* 3D CANVAS */}
             <div className="absolute inset-0 z-10 pointer-events-none">
                 <Canvas camera={{ position: [0, 0, 10], fov: 35 }}>
-                    <ambientLight intensity={1.5} />
-                    <directionalLight position={[10, 10, 5]} intensity={2} />
-                    <directionalLight position={[-10, -10, -5]} intensity={1} color="#f0f0f0" />
+                    <ambientLight intensity={1.8} />
+                    <directionalLight position={[10, 20, 10]} intensity={2.5} />
+                    <directionalLight position={[-10, -20, -10]} intensity={1.5} color="#ffffff" />
                     <Environment preset="city" />
-
                     <PhoneAnimator />
-
-                    <ContactShadows position={[0, -2.5, 0]} opacity={0.4} scale={10} blur={2} far={4} />
+                    <ContactShadows position={[0, -3.5, 0]} opacity={0.3} scale={25} blur={3} far={10} />
                 </Canvas>
             </div>
 
-            {/* HTML OVERLAY CONENT */}
-            <div ref={containerRef} className="absolute inset-0 z-20 w-full h-full pointer-events-none flex items-center justify-center">
-
-                {/* ── IMAGE CURSORS & SPARKS ── */}
-                <div ref={cursorRef} className="absolute top-0 left-0 z-50 pointer-events-none w-10 h-10 opacity-0 transform-origin-top-left -ml-2 -mt-2">
-                    {/* Multicolored Click Sparks Effect */}
-                    <div className="cursor-sparks absolute top-0 left-0 w-full h-full origin-center">
-                        <div className="spark absolute w-1.5 h-1.5 bg-yellow-400 rounded-full top-2 left-2 opacity-0" />
-                        <div className="spark absolute w-1.5 h-1.5 bg-sky-400 rounded-full top-2 left-2 opacity-0" />
-                        <div className="spark absolute w-1.5 h-1.5 bg-pink-400 rounded-full top-2 left-2 opacity-0" />
-                        <div className="spark absolute w-1.5 h-1.5 bg-emerald-400 rounded-full top-2 left-2 opacity-0" />
-                        <div className="spark absolute w-1.5 h-1.5 bg-purple-400 rounded-full top-2 left-2 opacity-0" />
-                        <div className="spark absolute w-1.5 h-1.5 bg-orange-400 rounded-full top-2 left-2 opacity-0" />
-                    </div>
-
-                    {/* PNG Assets */}
-                    <img src="/img/cursor.png" className="cursor-arrow absolute top-0 left-0 w-8 h-8 object-contain drop-shadow-md z-10" alt="cursor" />
-                    <img src="/img/cursor_hand.png" className="cursor-hand absolute top-0 left-0 w-8 h-8 object-contain drop-shadow-md z-20 opacity-0" alt="cursor hover" />
-                </div>
-
-                {/* ── HERO TITLE ── */}
-                <div ref={titleRef} className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 w-full h-full">
-                    <span className="text-xs md:text-sm font-mono tracking-[0.3em] uppercase text-muted-foreground mb-6">
-                        Skills & Expertise
-                    </span>
-                    <div className="text-5xl sm:text-7xl md:text-8xl lg:text-[100px] font-black tracking-tighter leading-[0.9] text-foreground drop-shadow-sm">
-                        <BlurText
-                            text="Building Digital"
-                            delay={30}
-                            className="text-foreground"
-                        />
-                        <BlurText
-                            text="Experiences"
-                            delay={30}
-                            className="text-foreground"
-                        />
+            {/* DOM OVERLAYS */}
+            <div ref={containerRef} className="absolute inset-0 z-20 w-full h-full pointer-events-none flex flex-col items-center justify-center">
+                {/* ── INTRO ── */}
+                <div ref={introRef} className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 will-change-transform">
+                    <span className="text-xs md:text-sm font-mono tracking-[0.4em] uppercase text-neutral-400 mb-6 font-bold">Skills & Expertise</span>
+                    <div className="text-6xl sm:text-7xl md:text-8xl lg:text-[100px] font-black tracking-tighter leading-[0.85] text-[#cdc4bb] opacity-90">
+                        <BlurText text="Building Digital" delay={30} />
+                        <BlurText text="Experiences" delay={30} />
                     </div>
                 </div>
 
-                {/* ── SKILLS LIST ── */}
-                <div
-                    ref={skillsListRef}
-                    className="absolute inset-0 w-full lg:w-1/2 lg:left-1/2 flex flex-col justify-end lg:justify-center px-4 md:px-12 lg:pr-24 lg:pl-12 opacity-0 pointer-events-auto pb-8 lg:pb-0"
-                    style={{ display: 'none' }}
-                >
-                    {/* The container for the burst effect centering. 
-                        We use relative here, and all items inside are absolute so they burst FROM the center. */}
-                    <div className="relative w-full max-w-lg mx-auto lg:ml-0 h-[45vh] lg:h-[40vh] flex items-center justify-center">
-                        {SKILL_CATEGORIES.map((cat, idx) => (
-                            <div key={idx} className="skill-category-item absolute inset-0 flex flex-col items-center justify-center opacity-0">
-                                {/* Category Title */}
-                                <h3 className="cat-title text-sm md:text-base font-mono uppercase tracking-widest font-bold text-foreground mb-8 flex items-center gap-3">
-                                    <span className="w-8 h-[2px] bg-foreground" />
-                                    {cat.title}
-                                    <span className="w-8 h-[2px] bg-foreground" />
-                                </h3>
+                {/* ── SKILLS ORBIT ── */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
+                    {SKILL_CATEGORIES.map((cat, idx) => (
+                        <div key={idx} ref={el => skillNodesRef.current[idx] = el}
+                            className="absolute flex flex-col items-center justify-center gap-2.5 will-change-[transform,opacity] pointer-events-none"
+                            style={{ transformOrigin: 'center center' }}>
+                            <h3 className="text-[9px] md:text-[11px] font-mono uppercase tracking-[0.3em] font-black text-[#8b8276] bg-white/60 px-3.5 py-1.5 rounded-full backdrop-blur-md border border-white/80 shadow-sm">{cat.title}</h3>
+                            <div className="flex flex-wrap items-center justify-center px-3 md:px-5 w-max max-w-[200px] md:max-w-[300px] gap-1.5">
+                                {cat.skills.map((skill) => (
+                                    <span key={skill} className="px-3.5 py-1.5 text-[10px] md:text-[13px] font-bold uppercase tracking-wider rounded-full bg-white/95 border border-white/80 shadow-[0_8px_25px_rgba(0,0,0,0.06)] text-[#2a2723] pointer-events-auto transition-all duration-300 hover:scale-110 hover:-translate-y-1 cursor-default">{skill}</span>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
 
-                                {/* Skill Tags (Flex layout to prevent messy overlapping, but animated dynamically) */}
-                                <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 max-w-sm md:max-w-md">
-                                    {cat.skills.map((skill, i) => {
-                                        // Playful, vibrant colors for the tags
-                                        const vColors = [
-                                            "bg-pink-100 border-pink-400 text-pink-900 shadow-pink-300",
-                                            "bg-emerald-100 border-emerald-400 text-emerald-900 shadow-emerald-300",
-                                            "bg-sky-100 border-sky-400 text-sky-900 shadow-sky-300",
-                                            "bg-purple-100 border-purple-400 text-purple-900 shadow-purple-300",
-                                            "bg-yellow-100 border-yellow-400 text-yellow-900 shadow-yellow-300",
-                                            "bg-orange-100 border-orange-400 text-orange-900 shadow-orange-300",
-                                        ];
-                                        const randomColor = vColors[i % vColors.length]; // Deterministic based on index
+                {/* ── EDITORIAL EXPERIENCE SCENES ── */}
+                {EXPERIENCE.map((xp, idx) => (
+                    <div key={idx} ref={el => xpScenesRef.current[idx] = el}
+                        className="absolute inset-0 w-full h-full flex flex-col lg:flex-row items-center pointer-events-none z-40 opacity-0 overflow-hidden"
+                        style={{ display: "none" }}>
+                        
+                        {/* Giant Watermark Background */}
+                        <div className="xp-watermark absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[20vw] font-black text-[#2a2723]/[0.02] select-none z-0 whitespace-nowrap tracking-tighter pointer-events-none">
+                            {xp.company}
+                        </div>
 
-                                        return (
-                                            <span
-                                                key={skill}
-                                                className={`skill-tag px-4 py-2 md:px-6 md:py-3 text-xs md:text-sm font-black uppercase tracking-wider rounded-xl border-2 shadow-[2px_2px_0_0] lg:shadow-[4px_4px_0_0] cursor-default ${randomColor}`}
-                                            >
-                                                {skill}
+                        {/* Left Column: Title & Meta */}
+                        <div className="relative z-10 w-full lg:w-1/2 px-8 md:px-16 lg:pl-24 flex flex-col justify-center lg:items-start pt-20 lg:pt-0">
+                            <div className="xp-index text-5xl md:text-7xl font-black text-[#2a2723]/10 mb-6 font-mono -ml-1">
+                                {String(idx + 1).padStart(2, '0')}
+                            </div>
+                            
+                            <div className="mb-8 flex flex-wrap gap-x-4 md:gap-x-6 gap-y-2" style={{ perspective: "1000px" }}>
+                                {xp.company.split(" ").map((word, wIdx) => (
+                                    <div key={wIdx} className="overflow-hidden flex">
+                                        {word.split("").map((char, cIdx) => (
+                                            <span key={cIdx} className="xp-company-char inline-block text-[13vw] sm:text-[11vw] lg:text-[8vw] font-black tracking-tighter leading-[0.8] text-[#2a2723] uppercase" style={{ transformStyle: "preserve-3d" }}>
+                                                {char}
                                             </span>
-                                        );
-                                    })}
+                                        ))}
+                                    </div>
+                                ))}
+                            </div>
+                            
+                            <div className="flex items-center gap-6 mb-8 lg:mb-12">
+                                <div className="xp-decor-line w-16 md:w-24 h-[3px] bg-[#2a2723] rounded-full origin-left"></div>
+                                <div className="xp-period bg-[#2a2723] text-[#f4f2ef] text-[10px] md:text-xs font-bold px-5 py-2.5 rounded-full uppercase tracking-widest shadow-xl">
+                                    {xp.period}
                                 </div>
                             </div>
-                        ))}
+
+                            <p className="xp-role text-lg md:text-2xl lg:text-3xl font-bold text-[#8b8276] uppercase tracking-[0.15em]">
+                                {xp.role}
+                            </p>
+                        </div>
+
+                        {/* Right Column: Highlights */}
+                        <div className="relative z-10 w-full lg:w-1/2 px-8 md:px-16 lg:pr-24 mt-12 lg:mt-0 flex flex-col justify-center">
+                            <div className="flex flex-col gap-6 lg:gap-10 max-w-xl lg:ml-auto">
+                                {xp.highlights.map((hlt, i) => (
+                                    <div key={i} className="xp-highlight flex items-start gap-5 lg:gap-8 group pointer-events-auto cursor-default">
+                                        <div className="text-sm md:text-base font-bold text-[#b0a79d] group-hover:text-[#2a2723] transition-colors duration-300 mt-1 font-mono">
+                                            /0{i + 1}
+                                        </div>
+                                        <p className="text-[15px] md:text-lg lg:text-xl font-medium text-[#5a554f] group-hover:text-[#1a1815] transition-colors duration-300 leading-relaxed tracking-tight">
+                                            {hlt}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
-                </div>
+                ))}
 
-                {/* ── EXPERIENCE LIST ── */}
-                <div
-                    ref={xpListRef}
-                    className="absolute inset-0 w-full lg:w-1/2 flex flex-col justify-end lg:justify-center px-4 md:px-12 lg:pl-24 lg:pr-12 opacity-0 pointer-events-auto pb-8 lg:pb-0"
-                    style={{ display: 'none' }}
-                >
-                    <div className="relative space-y-12 lg:space-y-16 w-full max-w-lg mx-auto lg:mr-0 h-[50vh] lg:h-auto overflow-y-auto no-scrollbar pointer-events-auto">
-
-                        {/* THE SVG TIMELINE LINE */}
-                        <svg
-                            className="absolute top-0 left-0 w-8 h-full -z-10 pointer-events-none"
-                            style={{ overflow: "visible" }}
-                        >
-                            {/* A fun curvy path routing through the items. */}
-                            <path
-                                className="xp-timeline-path"
-                                d="M 12,-20 V 50 C 12,80 32,90 32,120 C 32,150 12,160 12,190 V 260 C 12,290 32,300 32,330 C 32,360 12,370 12,400 V 600"
-                                fill="none"
-                                stroke="#d4d4d4"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            />
-                        </svg>
-
-                        {EXPERIENCE.map((xp, idx) => {
-                            // Alternate left/right indentation to match the curvy path
-                            const isCurvedAlign = idx % 2 !== 0;
-                            return (
-                                <div key={idx} className={`xp-item relative transition-colors duration-500 ${isCurvedAlign ? "pl-14" : "pl-8"}`}>
-                                    {/* Timeline Dot */}
-                                    <div className={`xp-dot absolute top-1.5 w-4 h-4 rounded-full bg-secondary border-2 border-neutral-900 opacity-0 ${isCurvedAlign ? "left-[24px]" : "left-[4px]"}`} />
-
-                                    <span className="text-xs font-mono font-bold text-muted-foreground mb-1 block">
-                                        {xp.period}
-                                    </span>
-                                    <h3 className="text-2xl md:text-4xl font-black text-foreground tracking-tight leading-none mb-2">
-                                        {xp.company}
-                                    </h3>
-                                    <h4 className="text-lg md:text-xl font-bold text-muted-foreground mb-4">
-                                        {xp.role}
-                                    </h4>
-
-                                    <ul className="space-y-2">
-                                        {xp.highlights.map((hlt, i) => (
-                                            <li key={i} className="flex items-start gap-3 text-secondary-foreground font-medium text-sm md:text-base">
-                                                <span className="text-muted mt-1 shrink-0">▸</span>
-                                                {hlt}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )
-                        })}
-                    </div>
-                </div>
-
-                {/* ── STATS ROW ── */}
-                <div
-                    ref={statsRef}
-                    className="absolute inset-0 flex items-end lg:items-center justify-center opacity-0 pointer-events-auto pb-12 lg:pb-0"
-                >
-                    {/* Shifted and rotated to match the phone's natural 3D perspective resting angle */}
-                    <div className="w-full max-w-5xl mx-auto px-4 lg:px-6 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 relative z-50 lg:-translate-x-12 lg:-translate-y-4 lg:rotate-[14deg] lg:scale-[0.9]">
-                        {SKILLS_STATS.map((stat, i) => {
-                            let content;
-
-                            // Handle specific stat formats manually for perfection
-                            if (stat.label === "Projects Completed") {
-                                content = <><CountUp from={0} to={6} duration={2} />+</>
-                            } else if (stat.label === "Graduated") {
-                                content = <>May&nbsp;<CountUp from={2000} to={2025} duration={2} separator="" startWhen={true} /></>
-                            } else if (stat.label === "Years Experience") {
-                                content = <><CountUp from={0} to={1.5} duration={2} />+</>
-                            } else if (stat.label === "GPA") {
-                                content = <>(<CountUp from={0} to={3.42} duration={2} />/4.00)</>
-                            } else {
-                                content = stat.value
-                            }
-
-                            return (
-                                <div key={i} className="stat-item flex flex-col items-center text-center">
-                                    <span className="text-3xl md:text-4xl lg:text-5xl font-black text-foreground tracking-tighter mb-2 font-mono flex items-center">
-                                        {content}
-                                    </span>
-                                    <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                                        {stat.label}
-                                    </span>
-                                </div>
-                            )
-                        })}
-                    </div>
-                </div>
-
+                <div className="fade-out-overlay absolute inset-0 z-50 bg-[#060606] opacity-0 pointer-events-none"></div>
             </div>
         </section>
     )
