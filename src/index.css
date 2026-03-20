@@ -246,3 +246,28 @@
     display: none;
   }
 }
+
+/* Custom scrollbar for specific elements */
+.fancy-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklch, var(--foreground) 25%, transparent) transparent;
+}
+
+.fancy-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.fancy-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 4px 0;
+}
+
+.fancy-scrollbar::-webkit-scrollbar-thumb {
+  background-color: color-mix(in oklch, var(--foreground) 25%, transparent);
+  border-radius: 20px;
+}
+
+.fancy-scrollbar:hover::-webkit-scrollbar-thumb {
+  background-color: color-mix(in oklch, var(--foreground) 45%, transparent);
+}

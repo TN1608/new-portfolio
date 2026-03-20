@@ -28,14 +28,14 @@ const MonitorScene = ({ isDetailActive, project }) => {
             // Detail state: Monitor shifts slightly off-center but remains visible on the left
             gsap.to(monitorRef.current.position, {
                 x: isMobile ? 0 : -5.5,
-                y: isMobile ? 0 : -1.5,
-                z: isMobile ? 11.5 : 2,
+                y: isMobile ? 3 : -1.5,
+                z: isMobile ? 12.5 : 2,
                 duration: 1.2,
                 ease: "power4.inOut"
             })
             gsap.to(monitorRef.current.rotation, {
-                x: 0.05,
-                y: 0.6,
+                x: isMobile ? 0.2 : 0.05,
+                y: isMobile ? 0 : 0.6,
                 z: -0.02,
                 duration: 1.2,
                 ease: "power4.inOut"
@@ -44,14 +44,14 @@ const MonitorScene = ({ isDetailActive, project }) => {
             // Idle state: Move monitor to the Left side and position lower than before
             gsap.to(monitorRef.current.position, {
                 x: isMobile ? 0 : -5,
-                y: isMobile ? 0 : -2, // Moved lower
-                z: isMobile ? -5 : 0,
+                y: isMobile ? 3.5 : -2, // Moved lower
+                z: isMobile ? 2 : 0,
                 duration: 1.2,
                 ease: "power4.inOut"
             })
             gsap.to(monitorRef.current.rotation, {
-                x: 0.1,
-                y: 0.4,
+                x: isMobile ? 0.15 : 0.1,
+                y: isMobile ? 0 : 0.4,
                 z: -0.05,
                 duration: 1.2,
                 ease: "power4.inOut"
@@ -180,7 +180,7 @@ export const ProjectsPage = () => {
 
             // 1. Entrance phase (0% to ~37% of scroll distance)
             tl.fromTo(".canvas-container",
-                { y: isMobile ? "-30vh" : "-60vh", opacity: 0, scale: 0.8, rotationZ: isMobile ? 0 : -0.1 },
+                { y: isMobile ? "-15vh" : "-60vh", opacity: 0, scale: isMobile ? 0.9 : 0.8, rotationZ: isMobile ? 0 : -0.1 },
                 { y: "0vh", opacity: 1, scale: 1, rotationZ: 0, ease: "none", duration: 37 }, 0)
             
             tl.fromTo(".ui-layer",
@@ -370,15 +370,15 @@ export const ProjectsPage = () => {
                 </div>
 
                 {/* ─── UI LAYER ─── */}
-                <div className="ui-layer absolute inset-0 container mx-auto px-4 md:px-8 z-10 pointer-events-none flex items-center justify-end h-full py-20 lg:py-24">
+                <div className="ui-layer absolute inset-0 container mx-auto px-0 md:px-8 z-10 pointer-events-none flex items-center justify-center lg:justify-end h-full py-0 lg:py-24">
                     
                     {/* The Right Side Interactive Area */}
-                    <div className="w-full lg:w-[50%] h-full max-h-[85vh] relative flex items-center justify-end">
+                    <div className="w-full lg:w-[50%] h-full max-h-[85vh] relative flex items-end lg:items-center justify-center lg:justify-end pb-8 lg:pb-0">
                         
                         {/* LIST CARD */}
                         <div
                             ref={listViewRef}
-                            className="absolute right-0 w-full h-full max-w-xl bg-white/40 backdrop-blur-3xl rounded-[2.5rem] p-8 lg:p-12 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] flex flex-col pointer-events-auto border border-white/60 will-change-transform"
+                            className="absolute bottom-6 md:bottom-12 lg:bottom-auto lg:right-0 w-[94%] md:w-[80%] lg:w-full h-[55%] lg:h-full max-h-[450px] lg:max-h-none max-w-xl bg-white/70 lg:bg-white/40 backdrop-blur-3xl rounded-[2rem] lg:rounded-[2.5rem] p-6 lg:p-12 shadow-[0_8px_32px_0_rgba(31,38,135,0.1)] flex flex-col pointer-events-auto border border-white/60 will-change-transform"
                         >
                             <div className="mb-8 shrink-0">
                                 <span className="text-neutral-500 font-bold tracking-widest uppercase text-sm font-sans flex items-center gap-3">
@@ -386,7 +386,7 @@ export const ProjectsPage = () => {
                                 </span>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar pr-2 lg:pr-6 flex flex-col gap-8" data-lenis-prevent="true">
+                            <div className="flex-1 overflow-y-auto overflow-x-hidden fancy-scrollbar pr-2 lg:pr-6 flex flex-col gap-8" data-lenis-prevent="true">
                                 {PROJECTS.map((project, i) => {
                                     const isActive = i === activeIndex
                                     return (
@@ -414,7 +414,7 @@ export const ProjectsPage = () => {
                         {/* DETAIL CARD */}
                         <div
                             ref={detailViewRef}
-                            className="absolute right-0 w-full h-full max-w-2xl bg-white/50 backdrop-blur-3xl rounded-[2.5rem] p-8 lg:p-12 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] flex-col pointer-events-none hidden border border-white/60 will-change-transform"
+                            className="absolute bottom-6 md:bottom-12 lg:bottom-auto lg:right-0 w-[94%] md:w-[80%] lg:w-full h-[70%] lg:h-full max-h-[550px] lg:max-h-none max-w-2xl bg-white/80 lg:bg-white/50 backdrop-blur-3xl rounded-[2rem] lg:rounded-[2.5rem] p-6 lg:p-12 shadow-[0_8px_32px_0_rgba(31,38,135,0.1)] flex-col pointer-events-none hidden border border-white/60 will-change-transform"
                         >
                             <div className="flex items-center justify-between mb-8 shrink-0">
                                 <button
@@ -443,7 +443,7 @@ export const ProjectsPage = () => {
                                 </div>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar pr-2 lg:pr-6 flex flex-col" data-lenis-prevent="true">
+                            <div className="flex-1 overflow-y-auto overflow-x-hidden fancy-scrollbar pr-2 lg:pr-6 flex flex-col" data-lenis-prevent="true">
                                 <div className="mb-10">
                                     <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-black text-neutral-900 tracking-tight leading-none mb-6">
                                         {selectedProject?.title}

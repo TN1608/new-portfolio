@@ -112,7 +112,7 @@ export const SkillsPage = () => {
 
             // ── PHASE 4: Editorial Experience Scenes ──
             tl.to(".stats-highlight-overlay", { opacity: 0, duration: 1 }, 8.5)
-            tl.to(proxy, { y: 20, z: -50, rotX: Math.PI / 6, scale: 3, ease: "power3.inOut", duration: 2 }, 8.5)
+            tl.to(proxy, { y: isMobile ? 12 : 20, z: isMobile ? -60 : -50, rotX: Math.PI / 6, scale: isMobile ? 2 : 3, ease: "power3.inOut", duration: 2 }, 8.5)
 
             let xpBaseTime = 10
             xpScenesRef.current.forEach((scene, i) => {
@@ -181,7 +181,7 @@ export const SkillsPage = () => {
                 {/* ── INTRO ── */}
                 <div ref={introRef} className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 will-change-transform">
                     <span className="text-xs md:text-sm font-mono tracking-[0.4em] uppercase text-neutral-400 mb-6 font-bold">Skills & Expertise</span>
-                    <div className="text-6xl sm:text-7xl md:text-8xl lg:text-[100px] font-black tracking-tighter leading-[0.85] text-neutral-900 opacity-90">
+                    <div className="text-[14vw] sm:text-7xl md:text-8xl lg:text-[100px] font-black tracking-tighter leading-[0.85] text-neutral-900 opacity-90">
                         <BlurText text="Building Digital"
                             delay={200}
                             animateBy="words"
@@ -223,16 +223,16 @@ export const SkillsPage = () => {
                         </div>
 
                         {/* Left Column: Title & Meta */}
-                        <div className="relative z-10 w-full lg:w-1/2 px-8 md:px-16 lg:pl-24 flex flex-col justify-center lg:items-start pt-20 lg:pt-0">
-                            <div className="xp-index text-5xl md:text-7xl font-black text-[#2a2723]/10 mb-6 font-mono -ml-1">
+                        <div className="relative z-10 w-full lg:w-1/2 px-6 md:px-16 lg:pl-24 flex flex-col justify-center lg:items-start pt-16 lg:pt-0">
+                            <div className="xp-index text-4xl md:text-7xl font-black text-[#2a2723]/10 mb-4 md:mb-6 font-mono -ml-1">
                                 {String(idx + 1).padStart(2, '0')}
                             </div>
 
-                            <div className="mb-8 flex flex-wrap gap-x-4 md:gap-x-6 gap-y-2" style={{ perspective: "1000px" }}>
+                            <div className="mb-6 md:mb-8 flex flex-wrap gap-x-3 md:gap-x-6 gap-y-1 md:gap-y-2" style={{ perspective: "1000px" }}>
                                 {xp.company.split(" ").map((word, wIdx) => (
                                     <div key={wIdx} className="overflow-hidden flex">
                                         {word.split("").map((char, cIdx) => (
-                                            <span key={cIdx} className="xp-company-char inline-block text-[13vw] sm:text-[11vw] lg:text-[8vw] font-black tracking-tighter leading-[0.8] text-[#2a2723] uppercase" style={{ transformStyle: "preserve-3d" }}>
+                                            <span key={cIdx} className="xp-company-char inline-block text-[11vw] sm:text-[9vw] lg:text-[8vw] font-black tracking-tighter leading-[0.8] text-[#2a2723] uppercase" style={{ transformStyle: "preserve-3d" }}>
                                                 {char}
                                             </span>
                                         ))}
@@ -240,27 +240,27 @@ export const SkillsPage = () => {
                                 ))}
                             </div>
 
-                            <div className="flex items-center gap-6 mb-8 lg:mb-12">
-                                <div className="xp-decor-line w-16 md:w-24 h-[3px] bg-[#2a2723] rounded-full origin-left"></div>
-                                <div className="xp-period bg-[#2a2723] text-[#f4f2ef] text-[10px] md:text-xs font-bold px-5 py-2.5 rounded-full uppercase tracking-widest shadow-xl">
+                            <div className="flex items-center gap-4 md:gap-6 mb-6 lg:mb-12">
+                                <div className="xp-decor-line w-12 md:w-24 h-[3px] bg-[#2a2723] rounded-full origin-left"></div>
+                                <div className="xp-period bg-[#2a2723] text-[#f4f2ef] text-[9px] md:text-xs font-bold px-4 py-2 md:px-5 md:py-2.5 rounded-full uppercase tracking-widest shadow-xl">
                                     {xp.period}
                                 </div>
                             </div>
 
-                            <p className="xp-role text-lg md:text-2xl lg:text-3xl font-bold text-[#8b8276] uppercase tracking-[0.15em]">
+                            <p className="xp-role text-base md:text-2xl lg:text-3xl font-bold text-[#8b8276] uppercase tracking-[0.15em]">
                                 {xp.role}
                             </p>
                         </div>
 
                         {/* Right Column: Highlights */}
-                        <div className="relative z-10 w-full lg:w-1/2 px-8 md:px-16 lg:pr-24 mt-12 lg:mt-0 flex flex-col justify-center">
-                            <div className="flex flex-col gap-6 lg:gap-10 max-w-xl lg:ml-auto">
+                        <div className="relative z-10 w-full lg:w-1/2 px-6 md:px-16 lg:pr-24 mt-6 lg:mt-0 flex flex-col justify-center">
+                            <div className="flex flex-col gap-4 lg:gap-10 max-w-xl lg:ml-auto">
                                 {xp.highlights.map((hlt, i) => (
-                                    <div key={i} className="xp-highlight flex items-start gap-5 lg:gap-8 group pointer-events-auto cursor-default">
-                                        <div className="text-sm md:text-base font-bold text-[#b0a79d] group-hover:text-[#2a2723] transition-colors duration-300 mt-1 font-mono">
+                                    <div key={i} className="xp-highlight flex items-start gap-3 lg:gap-8 group pointer-events-auto cursor-default">
+                                        <div className="text-xs md:text-base font-bold text-[#b0a79d] group-hover:text-[#2a2723] transition-colors duration-300 mt-0.5 md:mt-1 font-mono">
                                             /0{i + 1}
                                         </div>
-                                        <p className="text-[15px] md:text-lg lg:text-xl font-medium text-[#5a554f] group-hover:text-[#1a1815] transition-colors duration-300 leading-relaxed tracking-tight">
+                                        <p className="text-[13px] sm:text-sm md:text-lg lg:text-xl font-medium text-[#5a554f] group-hover:text-[#1a1815] transition-colors duration-300 leading-snug lg:leading-relaxed tracking-tight">
                                             {hlt}
                                         </p>
                                     </div>

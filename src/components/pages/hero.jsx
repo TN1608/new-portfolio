@@ -242,26 +242,26 @@ export const Hero = forwardRef((props, ref) => {
             </div>
 
             {/* ── MAIN CONTENT ── */}
-            <div className="container relative z-20 px-4 md:px-12 flex flex-col items-center justify-center h-full text-center mt-12">
+            <div className="container relative z-20 px-4 md:px-12 flex flex-col items-center justify-center h-full text-center mt-16 md:mt-12">
 
                 {/* Profile & Role Info */}
-                <div ref={badgeWrapRef} className="flex justify-center z-10 w-full mb-8">
-                    <div ref={badgeRef} className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 opacity-0">
-                        <div className="flex items-center gap-3 bg-white/5 pr-5 p-1.5 rounded-full border border-white/10 backdrop-blur-md">
-                            <div className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center text-lg font-black font-mono">
+                <div ref={badgeWrapRef} className="flex justify-center z-10 w-full mb-6 md:mb-8 mt-10 md:mt-0">
+                    <div ref={badgeRef} className="flex flex-col md:flex-row items-center gap-3 md:gap-6 opacity-0">
+                        <div className="flex items-center gap-2 md:gap-3 bg-white/5 pr-4 md:pr-5 p-1 md:p-1.5 rounded-full border border-white/10 backdrop-blur-md">
+                            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white text-black flex items-center justify-center text-base md:text-lg font-black font-mono">
                                 T
                             </div>
-                            <div className="flex flex-col items-start text-left">
-                                <span className="text-white font-bold text-sm tracking-wide leading-tight">Tuan Nguyen</span>
-                                <span className="text-white/50 text-[10px] uppercase tracking-widest font-mono mt-0.5">Frontend Developer</span>
+                            <div className="flex flex-col items-start text-left mr-2">
+                                <span className="text-white font-bold text-xs md:text-sm tracking-wide leading-tight">Tuan Nguyen</span>
+                                <span className="text-white/50 text-[9px] md:text-[10px] uppercase tracking-widest font-mono mt-0.5">Frontend Developer</span>
                             </div>
                         </div>
 
-                        <div className="hidden sm:block w-1.5 h-1.5 rounded-full bg-white/20" />
+                        <div className="hidden md:block w-1.5 h-1.5 rounded-full bg-white/20" />
 
                         <RotatingText
                             texts={["UI/UX Enthusiast", "Creative Developer", "Full-Stack Capable"]}
-                            mainClassName="px-5 py-2.5 rounded-full text-xs md:text-sm font-semibold bg-white/10 text-white overflow-hidden justify-center border border-white/20 backdrop-blur-md"
+                            mainClassName="px-4 py-2 md:px-5 md:py-2.5 rounded-full text-[11px] md:text-sm font-semibold bg-white/10 text-white overflow-hidden justify-center border border-white/20 backdrop-blur-md"
                             staggerFrom={"last"}
                             initial={{ y: "100%" }}
                             animate={{ y: 0 }}
@@ -290,7 +290,7 @@ export const Hero = forwardRef((props, ref) => {
                                 {word.split("").map((char, cIdx) => (
                                     <span
                                         key={`solid-char-${wIdx}-${cIdx}`}
-                                        className="char inline-block font-black text-[12vw] sm:text-[10vw] md:text-[9vw] lg:text-[11vw] tracking-tighter text-white opacity-0"
+                                        className="char inline-block font-black text-[11.5vw] sm:text-[10vw] md:text-[9vw] lg:text-[11vw] tracking-tighter text-white opacity-0"
                                         style={{ transformStyle: "preserve-3d" }}
                                     >
                                         {char}
@@ -310,7 +310,7 @@ export const Hero = forwardRef((props, ref) => {
                                 {word.split("").map((char, cIdx) => (
                                     <span
                                         key={`stroke-char-${wIdx}-${cIdx}`}
-                                        className="char inline-block font-black text-[12vw] sm:text-[10vw] md:text-[9vw] lg:text-[11vw] tracking-tighter opacity-0"
+                                        className="char inline-block font-black text-[11.5vw] sm:text-[10vw] md:text-[9vw] lg:text-[11vw] tracking-tighter opacity-0"
                                         style={{
                                             WebkitTextStroke: "1px rgba(255,255,255,0.4)",
                                             color: "transparent",
@@ -329,7 +329,7 @@ export const Hero = forwardRef((props, ref) => {
                 <div ref={subWrapRef} className="w-full flex justify-center z-10 mb-10 md:mb-12">
                     <p
                         ref={subRef}
-                        className="max-w-2xl text-sm md:text-base lg:text-lg text-white/70 leading-relaxed opacity-0"
+                        className="max-w-2xl text-[13px] sm:text-sm md:text-base lg:text-lg text-white/70 leading-relaxed opacity-0 text-balance px-4 md:px-0"
                     >
                         I build comprehensive full-stack solutions with a focus on
                         immersive frontend experiences and cutting-edge animations.
@@ -340,7 +340,7 @@ export const Hero = forwardRef((props, ref) => {
                 <div ref={ctaRef} className="flex flex-col sm:flex-row gap-4 mb-16">
                     <Button
                         size="lg"
-                        className="group px-8 py-6 text-sm font-bold tracking-wide uppercase rounded-full bg-white text-black hover:bg-white/90 transition-all duration-300"
+                        className="group px-6 py-5 md:px-8 md:py-6 text-xs md:text-sm font-bold tracking-wide uppercase rounded-full bg-white text-black hover:bg-white/90 transition-all duration-300"
                         onClick={() => handleNavigate('projects')}
                     >
                         View My Work

@@ -46,7 +46,7 @@ export function ProjectDetail({ project, open, onOpenChange }) {
                 <ul className="space-y-2">
                     {data.map((item, i) => (
                         <li key={i} className="flex items-start gap-2.5 text-sm text-muted-foreground">
-                            <span className="w-1.5 h-1.5 rounded-full bg-foreground/30 flex-shrink-0 mt-1.5" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-foreground/30 shrink-0 mt-1.5" />
                             {item}
                         </li>
                     ))}
@@ -68,7 +68,7 @@ export function ProjectDetail({ project, open, onOpenChange }) {
         <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent
                 side="right"
-                className="!w-full sm:!w-[540px] sm:!max-w-[540px] overflow-y-auto p-0 bg-background border-l border-border/50"
+                className="fancy-scrollbar w-full! sm:w-[540px]! sm:max-w-[540px]! overflow-y-auto p-0 bg-background border-l border-border/50"
             >
                 <div ref={contentRef}>
                     {/* Hero Image */}

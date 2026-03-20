@@ -100,11 +100,29 @@ export function ScrollProgress() {
 
         // 2. Instant scroll when fully covered
         tl.call(() => {
+            // Find if there's a pinning ScrollTrigger for this section to get the exact start scroll position
+            const pinningST = ScrollTrigger.getAll().find(st => st.trigger === target && st.vars.pin)
+            const scrollPos = pinningST ? pinningST.start : target
+
             if (window.__lenis) {
-                window.__lenis.scrollTo(target, { immediate: true })
+                window.__lenis.scrollTo(scrollPos, { immediate: true })
             } else {
-                target.scrollIntoView()
+                if (typeof scrollPos === "number") {
+                    window.scrollTo({ top: scrollPos })
+                } else {
+                    target.scrollIntoView()
+                }
             }
+
+            // Force ScrollTriggers to immediately jump their scrub tweens
+            // so they don't visually rewind the animation from the previous scroll spot
+            setTimeout(() => {
+                ScrollTrigger.update()
+                ScrollTrigger.getAll().forEach(st => {
+                    const scrubTween = st.getTween()
+                    if (scrubTween) scrubTween.progress(1)
+                })
+            }, 50)
         })
 
         // 3. Small pause, then lift curtains
