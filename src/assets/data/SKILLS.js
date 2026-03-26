@@ -47,6 +47,6 @@ export const EXPERIENCE = [
 export const SKILLS_STATS = [
     { label: "Projects Completed", value: "6+" },
     { label: "Graduated", value: "May 2025" },
-    { label: "Years Experience", value: "2.5+" },
+    { label: "Years Experience", value: "2+" },
     { label: "GPA", value: "(3.42/4.00)" },
 ]
